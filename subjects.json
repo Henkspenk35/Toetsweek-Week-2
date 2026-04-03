@@ -1,0 +1,34 @@
+[
+  {
+    "id": "geschiedenis",
+    "title": "Geschiedenis",
+    "description": "Flashcards met hoofdstukken, jaartallen en begrippen.",
+    "href": "geschiedenis.html",
+    "badge": "Leren",
+    "status": "ready"
+  },
+  {
+    "id": "wiskunde",
+    "title": "Wiskunde",
+    "description": "Theorie, praktijk en valkuilen in één trainer.",
+    "href": "wiskunde.html",
+    "badge": "Oefenen",
+    "status": "ready"
+  },
+  {
+    "id": "global-perspectives",
+    "title": "Global Perspectives",
+    "description": "Debatflashcards voor Egypte met argumenten en oefenzinnen.",
+    "href": "global-perspectives.html",
+    "badge": "Debat",
+    "status": "ready"
+  },
+  {
+    "id": "aardrijkskunde",
+    "title": "Aardrijkskunde",
+    "description": "Komt later. Tegel staat alvast klaar in de app.",
+    "href": "#",
+    "badge": "Binnenkort",
+    "status": "coming_soon"
+  }
+]
