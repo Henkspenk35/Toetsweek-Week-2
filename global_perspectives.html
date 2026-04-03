@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Global Perspectives – Egypte Flashcards</title>
+  <style>
+    :root{
+      --primary:#2c3e50;
+      --orange:#f39c12;
+      --blue:#3498db;
+      --green:#27ae60;
+      --bg:#f4f7f6;
+      --muted:#7f8c8d;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+      padding:18px;
+      color:var(--primary);
+    }
+    .app{
+      width:100%;
+      max-width:430px;
+    }
+    h1{
+      font-size:1.25rem;
+      margin:8px 0 6px;
+      text-align:center;
+    }
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      font-size:.92rem;
+      margin-bottom:8px;
+    }
+    .section-chip{
+      display:inline-block;
+      background:#e8f4ee;
+      color:#1f7a52;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:.8rem;
+      font-weight:700;
+      margin:0 auto 8px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:center;
+    }
+    .scene{
+      width:100%;
+      height:280px;
+      perspective:1000px;
+      margin:16px 0;
+    }
+    .card{
+      width:100%;
+      height:100%;
+      position:relative;
+      transition:transform .4s;
+      transform-style:preserve-3d;
+      cursor:pointer;
+    }
+    .card.is-flipped{ transform:rotateY(180deg); }
+    .card-face{
+      position:absolute;
+      inset:0;
+      backface-visibility:hidden;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      border-radius:25px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      background:#fff;
+      border:1px solid #d9e1e5;
+    }
+    .card-front{
+      color:var(--primary);
+    }
+    .card-back{
+      background:var(--primary);
+      color:#fff;
+      transform:rotateY(180deg);
+    }
+    .label{
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:10px;
+      opacity:.55;
+      font-weight:700;
+    }
+    .meta{
+      position:absolute;
+      top:16px;
+      left:18px;
+      right:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:.72rem;
+      opacity:.75;
+      gap:10px;
+    }
+    .star{
+      position:absolute;
+      top:14px;
+      right:18px;
+      font-size:1.5rem;
+      color:var(--orange);
+      display:none;
+    }
+    .is-marked .star{ display:block; }
+    .is-marked .card-face{ border:3px solid var(--orange); }
+    #text-front, #text-back{
+      font-size:1.20rem;
+      line-height:1.35;
+      font-weight:800;
+      max-width:100%;
+      overflow-wrap:break-word;
+      white-space:pre-wrap;
+    }
+    .small-back #text-back,
+    .small-front #text-front{
+      font-size:1rem;
+      font-weight:700;
+      line-height:1.45;
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      width:100%;
+    }
+    button, select{
+      padding:14px 12px;
+      border:none;
+      border-radius:15px;
+      background:#fff;
+      color:var(--primary);
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.05);
+      font-size:.92rem;
+    }
+    .btn-orange{ background:var(--orange); color:#fff; grid-column:span 2; }
+    .btn-blue{ background:var(--blue); color:#fff; grid-column:span 2; }
+    .btn-green{ background:var(--green); color:#fff; grid-column:span 2; }
+    .btn-dark{ background:var(--primary); color:#fff; grid-column:span 2; opacity:.9; font-size:.78rem; }
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .progress{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.87rem;
+      font-weight:700;
+      text-align:center;
+    }
+    #list-modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:#fff;
+      z-index:1000;
+      overflow-y:auto;
+      padding:18px;
+    }
+    .sticky{
+      position:sticky;
+      top:0;
+      background:#fff;
+      padding-bottom:12px;
+    }
+    .search-box{
+      width:100%;
+      padding:15px;
+      border-radius:12px;
+      border:1px solid #d9e1e5;
+      margin-bottom:10px;
+      font-size:1rem;
+    }
+    .sort-bar{
+      display:flex;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .sort-bar button{
+      flex:1;
+      padding:10px;
+      font-size:.78rem;
+      background:#eef2f4;
+      box-shadow:none;
+    }
+    .sort-bar button.active{
+      background:var(--primary);
+      color:#fff;
+    }
+    .word-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:14px 4px;
+      border-bottom:1px solid #edf1f3;
+      cursor:pointer;
+    }
+    .term{
+      font-weight:800;
+      margin-bottom:4px;
+      color:var(--primary);
+    }
+    .def{
+      color:#5c6b73;
+      line-height:1.4;
+      font-size:.94rem;
+    }
+    .tag{
+      display:inline-block;
+      margin-top:6px;
+      font-size:.72rem;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2f4;
+      color:#5c6b73;
+      font-weight:700;
+    }
+    .close-list{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      background:var(--primary);
+      color:#fff;
+      padding:15px 24px;
+      border-radius:30px;
+      z-index:20;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar"><div class="section-chip" id="section-chip">Alles samen</div></div>
+    <h1>Global Perspectives – Flashcards</h1>
+    <div class="subtitle">VN-debat over Noord-Korea vanuit Egypte</div>
+
+    <div class="toolbar">
+      <select id="section-select" onchange="changeSection()"></select>
+    </div>
+
+    <div class="scene" onclick="flip()">
+      <div class="card" id="card-element">
+        <div class="card-face card-front" id="front-face">
+          <div class="meta"><span id="card-type-front">Begrip / vraag</span><span id="card-topic-front"></span></div>
+          <div class="star">★</div>
+          <div class="label" id="label-front">Voorkant</div>
+          <div id="text-front">...</div>
+        </div>
+        <div class="card-face card-back" id="back-face">
+          <div class="meta"><span id="card-type-back">Antwoord / uitleg</span><span id="card-topic-back"></span></div>
+          <div class="label" id="label-back">Achterkant</div>
+          <div id="text-back">...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="prev()">⬅️ Vorige</button>
+      <button onclick="next()">Volgende ➡️</button>
+      <button class="btn-orange" onclick="mark()">❌ Ken ik nog niet</button>
+      <button onclick="shuffle()">🔀 Husselen</button>
+      <button id="lang-btn" onclick="toggleLang()">🔄 Vraag ➔ Antwoord</button>
+      <button id="filter-btn" onclick="toggleFilter()">Focus op moeilijk (0)</button>
+      <button class="btn-green" onclick="toggleMode()" id="mode-btn">Modus: alles</button>
+      <button class="btn-blue" onclick="openList()">📋 Kaartenlijst & zoeken</button>
+      <button class="btn-dark" onclick="resetProgress()">🗑️ Voortgang wissen</button>
+    </div>
+
+    <div class="progress" id="progress">Kaart 1 van ...</div>
+  </div>
+
+  <div id="list-modal">
+    <div class="sticky">
+      <input type="text" class="search-box" id="search-input" placeholder="Zoek begrip, vraag of uitleg..." oninput="renderList()">
+      <div class="sort-bar">
+        <button id="sort-std" class="active" onclick="setSort('std')">Standaard</button>
+        <button id="sort-diff" onclick="setSort('diff')">Moeilijk ★</button>
+      </div>
+    </div>
+    <div id="list-container"></div>
+    <button class="close-list" onclick="closeList()">SLUITEN ✖</button>
+  </div>
+
+  <script>
+    const sections = [
+      {
+        id: "alles",
+        title: "Global Perspectives – Alles samen",
+        cards: []
+      },
+      {
+        id: "egypte",
+        title: "Egypte – Standpunten per onderwerp",
+        cards: [
+          {type:"begrip", topic:"kernwapens", front:"Wat is het basisstandpunt van Egypte over Noord-Koreaanse kernwapens?", back:"Egypte wil dat Noord-Korea stopt met het maken van kernwapens, maar zonder oorlog.", short:true},
+          {type:"theorie", topic:"kernwapens", front:"Waarom is Egypte tegen een oorlog rond Noord-Korea?", back:"Omdat oorlog veel onrust veroorzaakt in een regio, en Egypte uit eigen ervaring weet hoe ontwrichtend regionale instabiliteit kan zijn."},
+          {type:"theorie", topic:"kernwapens", front:"Welke oplossing heeft Egypte het liefst voor het kernwapendossier?", back:"Gesprekken en onderhandelingen. Egypte wil via diplomatie tot een oplossing komen."},
+          {type:"theorie", topic:"kernwapens", front:"Hoe kijkt Egypte naar sancties tegen Noord-Korea?", back:"Egypte kan overwegen sancties te verlichten als Noord-Korea meewerkt. Sancties zijn dus voor Egypte geen doel op zich, maar een middel dat gekoppeld kan worden aan samenwerking."},
+          {type:"begrip", topic:"strafkampen", front:"Wat is Egyptes basispositie over de strafkampen in Noord-Korea?", back:"Egypte heeft daar geen hard standpunt over en vindt dat andere landen zich niet te veel moeten bemoeien met binnenlandse zaken.", short:true},
+          {type:"theorie", topic:"strafkampen", front:"Hoe formuleer je Egyptes lijn over strafkampen diplomatiek?", back:"Egypte erkent dat de situatie ernstig kan zijn, maar vindt dat de VN voorzichtig moet zijn met inmenging in de interne aangelegenheden van een soevereine staat."},
+          {type:"begrip", topic:"hongersnood", front:"Wat is Egyptes basispositie over de hongersnood in Noord-Korea?", back:"Egypte ziet de hongersnood vooral als een probleem van Noord-Korea zelf.", short:true},
+          {type:"theorie", topic:"hongersnood", front:"Is Egypte tegen voedselhulp?", back:"Nee. Egypte staat open voor voedselhulp, maar vindt niet dat andere landen zich daardoor te veel moeten gaan bemoeien met Noord-Korea."},
+          {type:"theorie", topic:"samenvatting", front:"Wat is de rode draad in alle drie de Egyptische standpunten?", back:"Stabiliteit, diplomatie en respect voor soevereiniteit. Egypte wil geen escalatie en geen overdreven buitenlandse inmenging."}
+        ]
+      },
+      {
+        id: "argumenten",
+        title: "Egypte – Argumenten & verdediging",
+        cards: [
+          {type:"theorie", topic:"kernwapens", front:"Noem twee sterke argumenten voor Egyptes standpunt over kernwapens.", back:"1. Oorlog vergroot de instabiliteit. 2. Diplomatie geeft meer kans op duurzame de-escalatie dan puur militair of strafgericht optreden."},
+          {type:"theorie", topic:"kernwapens", front:"Hoe koppel je het kernwapenstandpunt van Egypte aan zijn eigen regio?", back:"Egypte kan zeggen dat instabiliteit in één regio snel andere landen raakt en dat het daarom uit ervaring kiest voor voorzichtigheid, gesprekken en beheersing van escalatie."},
+          {type:"theorie", topic:"strafkampen", front:"Hoe verdedig je Egyptes terughoudende positie over strafkampen zonder kil over te komen?", back:"Zeg dat mensenrechten belangrijk zijn, maar dat te snelle inmenging van buitenaf de situatie ook kan verergeren. Egypte kiest daarom voor terughoudendheid en diplomatieke druk in plaats van directe bemoeienis."},
+          {type:"theorie", topic:"hongersnood", front:"Hoe verdedigt Egypte zijn positie over voedselhulp?", back:"Egypte is niet tegen hulp, maar wil hulp zó vormgeven dat die de bevolking bereikt zonder dat andere staten Noord-Korea volledig gaan sturen of domineren."},
+          {type:"theorie", topic:"woordkeuze (framing)", front:"Hoe frame je Egyptes standpunt positief?", back:"Niet als zwak of passief, maar als verantwoordelijk, realistisch en gericht op stabiliteit op de lange termijn."},
+          {type:"theorie", topic:"woordkeuze (framing)", front:"Welke drie woorden passen het best bij Egyptes lijn?", back:"Stabiliteit. Diplomatie. Soevereiniteit.", short:true},
+          {type:"theorie", topic:"speech", front:"Welke kernzin kun je bijna altijd gebruiken om terug te keren naar Egyptes lijn?", back:"Egypte kiest voor een oplossing die spanning verlaagt, de regio stabiel houdt en de soevereiniteit van staten respecteert."}
+        ]
+      },
+      {
+        id: "rebuttal",
+        title: "Egypte – Rebuttals & omdraaien",
+        cards: [
+          {type:"theorie", topic:"rebuttal", front:"Wat zeg je als een tegenstander een sterk moreel argument geeft over strafkampen?", back:"Dat punt begrijpen wij, maar juist daarom moeten we voorkomen dat de situatie verder escaleert. Egypte vindt dat de VN zorgvuldig moet handelen en geen nieuwe chaos moet veroorzaken."},
+          {type:"theorie", topic:"rebuttal", front:"Wat zeg je als iemand roept: 'Er moeten veel hardere sancties komen'?", back:"Hardere sancties klinken daadkrachtig, maar kunnen onderhandelingen blokkeren en de situatie onvoorspelbaarder maken. Egypte wil druk koppelen aan samenwerking, niet aan blinde escalatie."},
+          {type:"theorie", topic:"rebuttal", front:"Wat zeg je als iemand zegt dat voedselhulp alleen mag in ruil voor nucleaire concessies?", back:"Egypte vindt dat humanitaire hulp niet volledig gegijzeld moet worden door geopolitiek. Hulp aan burgers moet mogelijk blijven, terwijl diplomatie over kernwapens parallel doorgaat."},
+          {type:"theorie", topic:"rebuttal", front:"Wat zeg je als een tegenstander zegt dat niet-ingrijpen hetzelfde is als wegkijken?", back:"Niet elk krachtig antwoord is militair of dwingend. Egypte kiest voor een aanpak die zowel verantwoordelijkheid neemt als verdere destabilisatie voorkomt."},
+          {type:"theorie", topic:"rebuttal", front:"Wat is de handigste debatbeweging als je tegenstander een goed punt heeft?", back:"Eerst kort erkennen, daarna draaien: 'Dat is een terecht punt, maar juist daarom...'"},
+          {type:"begrip", topic:"debattruc", front:"Erkennen en terugdraaien", back:"Eerst een deel van het punt van de ander erkennen, daarna het gesprek terugsturen naar je eigen lijn.", short:true},
+          {type:"theorie", topic:"debattruc", front:"Geef een voorbeeld van erkennen en terugdraaien in deze opdracht.", back:"'Wij erkennen dat de humanitaire situatie ernstig is, maar juist daarom moeten we een oplossing kiezen die hulp mogelijk maakt zonder nieuwe instabiliteit te veroorzaken.'"},
+          {type:"theorie", topic:"debattruc", front:"Wat doe je als je tegenstander jouw standpunt neerzet als zwak?", back:"Herframe het als verstandig en verantwoordelijk: Egypte kiest niet voor zwakte, maar voor beheersing, diplomatie en regionale stabiliteit."}
+        ]
+      },
+      {
+        id: "tegenstanders",
+        title: "Egypte – Reacties op andere landen",
+        cards: [
+          {type:"theorie", topic:"VS / Japan / Frankrijk", front:"Hoe reageer je op landen die veel harder tegen Noord-Korea willen optreden?", back:"Zeg dat hun zorgen begrijpelijk zijn, maar dat een te harde lijn de kans op escalatie vergroot. Egypte kiest liever voor druk via gesprekken en gecontroleerde stappen."},
+          {type:"theorie", topic:"China / Rusland", front:"Hoe reageer je op landen die bijna alles als binnenlandse zaak zien?", back:"Egypte zit ertussenin: niet te veel inmenging, maar ook niet doen alsof er helemaal geen probleem is. Egypte wil wel gesprekken en beperkte, zorgvuldige actie."},
+          {type:"theorie", topic:"Verenigd Koninkrijk", front:"Wat zeg je als het VK mensenrechten direct koppelt aan kernwapens?", back:"Dat is een begrijpelijke zorg, maar Egypte vindt dat de VN dan nog steeds moet kiezen voor een aanpak die escalatie voorkomt en diplomatie openhoudt."},
+          {type:"theorie", topic:"India / Brazilië / Zuid-Afrika", front:"Met welke landen kan Egypte waarschijnlijk deels optrekken?", back:"Met landen die ook diplomatie, terughoudendheid of beperkte inmenging belangrijk vinden, zoals India, Brazilië en in sommige opzichten Zuid-Afrika."}
+        ]
+      },
+      {
+        id: "debatzinnen",
+        title: "Egypte – Debatzinnen om te gebruiken",
+        cards: [
+          {type:"begrip", topic:"opening", front:"Sterke openingszin", back:"Egypte staat voor stabiliteit, diplomatie en een oplossing die escalatie voorkomt.", short:true},
+          {type:"begrip", topic:"opening", front:"Tweede openingszin", back:"Wij erkennen de ernst van de situatie, maar wij geloven dat verantwoordelijkheid zonder escalatie moet worden genomen.", short:true},
+          {type:"begrip", topic:"koppelen", front:"Zin om een punt terug te draaien", back:"Dat is juist precies waarom Egypte pleit voor een diplomatieke en gecontroleerde aanpak.", short:true},
+          {type:"begrip", topic:"koppelen", front:"Zin om een goed argument van de ander naar jezelf toe te trekken", back:"Wij delen die zorg, en precies daarom vinden wij dat onderhandelingen open moeten blijven.", short:true},
+          {type:"begrip", topic:"overbruggen", front:"Zin om van mensenrechten terug te gaan naar stabiliteit", back:"Mensenrechten zijn belangrijk, maar zonder stabiliteit worden oplossingen vaak nog moeilijker.", short:true},
+          {type:"begrip", topic:"slot", front:"Sterke slotzin", back:"De Egyptische lijn is niet de luidste, maar wel de meest stabiele en duurzame.", short:true},
+          {type:"begrip", topic:"slot", front:"Tweede slotzin", back:"Egypte kiest voor een VN die problemen verkleint in plaats van vergroot.", short:true}
+          ,{type:"begrip", topic:"oefenzin", front:"Zin om tijd te winnen", back:"Dat is een interessante vraag, maar ik wil eerst iets anders verduidelijken.", short:true}
+          ,{type:"begrip", topic:"oefenzin", front:"Zin om controle terug te pakken", back:"Volgens mij gaat het hier eigenlijk om een belangrijker punt, namelijk...", short:true}
+          ,{type:"begrip", topic:"oefenzin", front:"Zin om tegenstander te nuanceren", back:"Ik denk dat dat iets te simpel wordt voorgesteld.", short:true}
+          ,{type:"begrip", topic:"oefenzin", front:"Zin om twijfel te zaaien", back:"Maar is dat wel realistisch op de lange termijn?", short:true}
+          ,{type:"begrip", topic:"oefenzin", front:"Zin om sterk af te sluiten", back:"Daarom is de positie van Egypte uiteindelijk de meest verstandige keuze.", short:true}
+
+        ]
+      }
+    ];
+
+    sections[0].cards = sections.slice(1).flatMap(section => section.cards);
+
+    let currentSectionIndex = 0;
+    let allWords = [];
+    let currentList = [];
+    let difficultWords = [];
+    let idx = 0;
+    let reverseMode = false;
+    let filterOn = false;
+    let sortMode = 'std';
+    let studyMode = 'all';
+
+    const card = document.getElementById('card-element');
+    const frontFace = document.getElementById('front-face');
+    const backFace = document.getElementById('back-face');
+    const textFront = document.getElementById('text-front');
+    const textBack = document.getElementById('text-back');
+    const prog = document.getElementById('progress');
+
+    function storageKey(){
+      return `gp_egypt_flashcards_${sections[currentSectionIndex].id}_v3`;
+    }
+
+    function initSectionSelector(){
+      const select = document.getElementById('section-select');
+      select.innerHTML = sections.map((s, i) =>
+        `<option value="${i}">${s.title}</option>`
+      ).join('');
+      select.value = currentSectionIndex;
+    }
+
+    function rebuildCurrentSection(){
+      const section = sections[currentSectionIndex];
+      document.getElementById('section-chip').textContent = section.id === 'alles' ? 'Alles samen' : section.id.charAt(0).toUpperCase() + section.id.slice(1);
+      document.querySelector('.subtitle').textContent = section.id === 'alles'
+        ? 'Egypte + debataanpakën'
+        : section.title.replace('Global Perspectives – ', '').replace('Egypte – ', '');
+      allWords = section.cards.map((c, i) => ({...c, _id: `${section.id}_${i}`}));
+      load();
+      applyStudyMode();
+    }
+
+    function changeSection(){
+      currentSectionIndex = Number(document.getElementById('section-select').value);
+      idx = 0;
+      filterOn = false;
+      studyMode = 'all';
+      document.getElementById('mode-btn').textContent = 'Modus: alles';
+      rebuildCurrentSection();
+    }
+
+    function load() {
+      difficultWords = [];
+      idx = 0;
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || '{}');
+      if (saved.diffIds) {
+        difficultWords = saved.diffIds.map(id => allWords.find(w => w._id === id)).filter(Boolean);
+      }
+      if (typeof saved.lastIdx === 'number') idx = saved.lastIdx;
+      reverseMode = saved.reverseMode === true;
+      if (saved.studyMode) studyMode = saved.studyMode;
+    }
+
+    function save() {
+      localStorage.setItem(storageKey(), JSON.stringify({
+        diffIds: difficultWords.map(w => w._id),
+        lastIdx: idx,
+        reverseMode,
+        studyMode
+      }));
+    }
+
+    function applyStudyMode(){
+      let base = [...allWords];
+      if (studyMode === 'begrippen') base = base.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') base = base.filter(w => w.type === 'theorie');
+
+      currentList = filterOn ? base.filter(w => difficultWords.includes(w)) : base;
+
+      if (currentList.length === 0 && filterOn) {
+        alert("Geen moeilijke kaarten binnen deze modus.");
+        filterOn = false;
+        currentList = base;
+      }
+      if (idx >= currentList.length) idx = 0;
+      updateModeButton();
+      update();
+    }
+
+    function updateModeButton(){
+      const labels = {
+        all: 'Modus: alles',
+        begrippen: 'Modus: alleen zinnen / kernpunten',
+        theorie: 'Modus: alleen uitleg / aanpak'
+      };
+      document.getElementById('mode-btn').textContent = labels[studyMode];
+    }
+
+    function cycleModeValue(v){
+      if (v === 'all') return 'begrippen';
+      if (v === 'begrippen') return 'theorie';
+      return 'all';
+    }
+
+    function toggleMode(){
+      studyMode = cycleModeValue(studyMode);
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function update(){
+      if (currentList.length === 0) {
+        textFront.textContent = 'Geen kaarten in deze modus';
+        textBack.textContent = 'Kies een andere modus of sectie';
+        prog.textContent = '0 kaarten';
+        return;
+      }
+
+      card.classList.remove('is-flipped');
+      const item = currentList[idx];
+
+      const frontText = reverseMode ? item.back : item.front;
+      const backText = reverseMode ? item.front : item.back;
+
+      textFront.textContent = frontText;
+      textBack.textContent = backText;
+
+      document.getElementById('label-front').textContent = reverseMode ? 'Antwoord / uitleg' : 'Vraag / kernpunt';
+      document.getElementById('label-back').textContent = reverseMode ? 'Vraag / kernpunt' : 'Antwoord / uitleg';
+
+      document.getElementById('card-type-front').textContent = reverseMode
+        ? (item.type === 'begrip' ? 'Kernzin' : 'Uitleg / aanpak')
+        : (item.type === 'begrip' ? 'Kernzin / debatregel' : 'Vraag / aanpak');
+      document.getElementById('card-type-back').textContent = reverseMode
+        ? (item.type === 'begrip' ? 'Vraag / debatregel' : 'Vraag / aanpak')
+        : 'Antwoord / uitleg';
+
+      document.getElementById('card-topic-front').textContent = item.topic || '';
+      document.getElementById('card-topic-back').textContent = item.topic || '';
+
+      frontFace.classList.toggle('small-front', frontText.length > 110);
+      backFace.classList.toggle('small-back', backText.length > 150);
+
+      prog.textContent = `Kaart ${idx + 1} van ${currentList.length}`;
+      card.classList.toggle('is-marked', difficultWords.includes(item));
+      document.getElementById('filter-btn').textContent = `Focus op moeilijk (${difficultWords.length})`;
+      document.getElementById('lang-btn').textContent = reverseMode ? '🔄 Antwoord ➔ Vraag' : '🔄 Vraag ➔ Antwoord';
+
+      save();
+    }
+
+    function flip(){ card.classList.toggle('is-flipped'); }
+    function next(){ idx = (idx + 1) % currentList.length; update(); }
+    function prev(){ idx = (idx - 1 + currentList.length) % currentList.length; update(); }
+    function shuffle(){ currentList.sort(() => Math.random() - 0.5); idx = 0; update(); }
+    function toggleLang(){ reverseMode = !reverseMode; update(); }
+
+    function mark(){
+      const item = currentList[idx];
+      if (!difficultWords.includes(item)) difficultWords.push(item);
+      else difficultWords = difficultWords.filter(w => w !== item);
+      update();
+    }
+
+    function toggleFilter(){
+      filterOn = !filterOn;
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function openList(){
+      document.getElementById('list-modal').style.display = 'block';
+      renderList();
+    }
+
+    function closeList(){
+      document.getElementById('list-modal').style.display = 'none';
+    }
+
+    function setSort(mode){
+      sortMode = mode;
+      document.getElementById('sort-std').className = mode === 'std' ? 'active' : '';
+      document.getElementById('sort-diff').className = mode === 'diff' ? 'active' : '';
+      renderList();
+    }
+
+    function renderList(){
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+
+      let list = allWords.map((w, i) => ({ ...w, origIdx: i }));
+      if (studyMode === 'begrippen') list = list.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') list = list.filter(w => w.type === 'theorie');
+
+      if (sortMode === 'diff') {
+        list.sort((a, b) => Number(difficultWords.includes(allWords[b.origIdx])) - Number(difficultWords.includes(allWords[a.origIdx])));
+      }
+
+      list.forEach(w => {
+        const hay = `${w.front} ${w.back} ${w.topic} ${w.type}`.toLowerCase();
+        if (hay.includes(q)) {
+          const div = document.createElement('div');
+          div.className = 'word-item';
+          div.innerHTML = `
+            <div>
+              <div class="term">${escapeHtml(w.front)}</div>
+              <div class="def">${escapeHtml(w.back)}</div>
+              <div class="tag">${w.type} • ${w.topic}</div>
+            </div>
+            <span>${difficultWords.includes(allWords[w.origIdx]) ? '★' : ''}</span>
+          `;
+          div.onclick = () => {
+            filterOn = false;
+            currentList = [...allWords];
+            if (studyMode === 'begrippen') currentList = currentList.filter(x => x.type === 'begrip');
+            if (studyMode === 'theorie') currentList = currentList.filter(x => x.type === 'theorie');
+            idx = currentList.findIndex(x => x._id === w._id);
+            if (idx < 0) idx = 0;
+            update();
+            closeList();
+          };
+          container.appendChild(div);
+        }
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    function resetProgress(){
+      if (confirm("Wis voortgang voor deze sectie?")) {
+        localStorage.removeItem(storageKey());
+        changeSection();
+      }
+    }
+
+    initSectionSelector();
+    rebuildCurrentSection();
+  </script>
+</body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Wiskunde – Formules en letters</title>
+  <style>
+    :root{
+      --primary:#1f4e79;
+      --accent:#0ea5e9;
+      --bg:#f4f7f9;
+      --card:#ffffff;
+      --dark:#16324a;
+      --practice:#f59e0b;
+      --theory:#10b981;
+      --muted:#6b7280;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);
+      margin:0;
+      padding:18px;
+      color:var(--dark);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+    }
+    h1{
+      margin:8px 0 2px;
+      font-size:1.45rem;
+      color:var(--primary);
+      text-align:center;
+    }
+    .subtitle{
+      color:var(--muted);
+      margin-bottom:12px;
+      text-align:center;
+      font-size:.95rem;
+      max-width:760px;
+    }
+    .topbar{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .row{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+    }
+    @media (min-width:860px){
+      .row.two{grid-template-columns:1.2fr 1fr 1fr;}
+    }
+    select,button,input{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:14px 15px;
+      font-size:1rem;
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    select,input{background:white;color:var(--dark)}
+    button{cursor:pointer;background:white;color:var(--dark);font-weight:700}
+    .btn-primary{background:var(--primary);color:white}
+    .btn-practice{background:var(--practice);color:white}
+    .btn-theory{background:var(--theory);color:white}
+    .scene{
+      width:100%;
+      max-width:760px;
+      height:360px;
+      perspective:1200px;
+      margin:14px 0 10px;
+    }
+    .card{
+      width:100%;height:100%;position:relative;transform-style:preserve-3d;
+      transition:transform .42s ease;cursor:pointer;
+    }
+    .card.is-flipped{transform:rotateY(180deg)}
+    .face{
+      position:absolute;inset:0;backface-visibility:hidden;
+      background:var(--card);border-radius:26px;padding:26px;
+      box-shadow:0 10px 28px rgba(0,0,0,.10);
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      text-align:center;border:1px solid #d8e0e8;
+    }
+    .back{transform:rotateY(180deg);background:linear-gradient(180deg,#1f4e79,#16324a);color:white;border:none}
+    .eyebrow{
+      font-size:.76rem;text-transform:uppercase;letter-spacing:.12em;font-weight:800;
+      opacity:.75;margin-bottom:10px;
+    }
+    .tagbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+    .tag{
+      font-size:.72rem;font-weight:800;border-radius:999px;padding:6px 10px;
+      background:#eaf2f8;color:var(--primary);
+    }
+    .tag.theory{background:#dcfce7;color:#0f766e}
+    .tag.practice{background:#fef3c7;color:#b45309}
+    .tag.pitfall{background:#fee2e2;color:#b91c1c}
+    .maintext{font-size:1.55rem;line-height:1.28;font-weight:800;max-width:95%}
+    .back .maintext{font-size:1.28rem;font-weight:700}
+    .note{margin-top:14px;font-size:1rem;line-height:1.45;opacity:.92;max-width:95%}
+    .math{font-family:"Times New Roman", Georgia, serif; font-weight:700}
+    .progress{
+      width:100%;max-width:760px;display:flex;justify-content:space-between;gap:10px;
+      color:var(--muted);font-weight:700;font-size:.92rem;margin-bottom:10px;
+    }
+    .controls{
+      width:100%;max-width:760px;display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    }
+    .controls .wide{grid-column:span 2}
+    .filters{
+      width:100%;max-width:760px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;
+    }
+    .tiny{font-size:.82rem;color:var(--muted);text-align:center;margin-top:8px;max-width:760px}
+    .list-modal{
+      display:none;position:fixed;inset:0;background:rgba(255,255,255,.98);z-index:20;padding:18px;overflow:auto;
+    }
+    .modal-inner{max-width:880px;margin:0 auto}
+    .list-item{background:white;border-radius:18px;padding:14px 16px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}
+    .list-item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .list-item .front{font-weight:800;color:var(--dark)}
+    .list-item .meta{font-size:.78rem;color:var(--muted);margin-bottom:6px}
+    .list-item .backtxt{color:#374151;font-size:.95rem;margin-top:6px}
+    .star{position:absolute;right:18px;top:16px;font-size:1.4rem;color:#f59e0b;display:none}
+    .marked .star{display:block}
+    .marked .face{border:3px solid #f59e0b}
+  </style>
+</head>
+<body>
+  <h1>Wiskunde – Formules en letters</h1>
+  <div class="subtitle">Volledige set met duidelijke segmentatie tussen theorie en praktijk. Gericht op mentaal begrijpen, herkennen van valkuilen en korte toetsvragen zonder papier.</div>
+
+  <div class="topbar">
+    <div class="row two">
+      <select id="categorySelect"></select>
+      <select id="modeSelect">
+        <option value="all">Alles in categorie</option>
+        <option value="theory">Alleen theorie</option>
+        <option value="practice">Alleen praktijk</option>
+        <option value="pitfalls">Alleen valkuilen</option>
+      </select>
+      <select id="directionSelect">
+        <option value="frontback">Vraag → antwoord</option>
+        <option value="backfront">Antwoord → vraag</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="scene" onclick="flipCard()">
+    <div class="card" id="card">
+      <div class="face front">
+        <div class="star">★</div>
+        <div class="eyebrow" id="frontLabel">Vraag</div>
+        <div class="tagbar" id="frontTags"></div>
+        <div class="maintext" id="frontText">...</div>
+        <div class="note" id="frontNote"></div>
+      </div>
+      <div class="face back">
+        <div class="eyebrow" id="backLabel">Antwoord</div>
+        <div class="tagbar" id="backTags"></div>
+        <div class="maintext" id="backText">...</div>
+        <div class="note" id="backNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress">
+    <div id="progressText">Kaart 1 van 1</div>
+    <div id="setInfo">Set</div>
+  </div>
+
+  <div class="controls">
+    <button onclick="prevCard()">⬅️ Vorige</button>
+    <button onclick="nextCard()">Volgende ➡️</button>
+    <button class="btn-primary wide" onclick="toggleMark()">★ Ken ik nog niet / markeer</button>
+    <button class="btn-theory" onclick="shuffleCards()">🔀 Husselen</button>
+    <button class="btn-practice" onclick="openList()">📋 Kaartenlijst</button>
+  </div>
+
+  <div class="filters">
+    <button onclick="toggleMarkedOnly()" id="markedOnlyBtn">Focus op gemarkeerd (0)</button>
+    <button onclick="resetProgress()">🗑️ Voortgang wissen</button>
+  </div>
+
+  <div class="tiny">Aanpak: klik op de kaart om te flippen. Theorie = regels en denkstappen. Praktijk = korte mentale toetsvragen. Valkuil = typische fouten.</div>
+
+  <div class="list-modal" id="listModal">
+    <div class="modal-inner">
+      <input type="text" id="searchInput" placeholder="Zoek kaart..." oninput="renderList()" />
+      <div style="height:12px"></div>
+      <div id="listContainer"></div>
+      <div style="height:12px"></div>
+      <button class="btn-primary" onclick="closeList()">Sluiten</button>
+    </div>
+  </div>
+
+<script>
+const cards = [
+  // 6.1 Kwadraten - Theorie
+  {section:'6.1 Kwadraten', mode:'theory', topic:'regel', front:'Wat betekent 9²?', back:'9 × 9 = 81', note:'Een kwadraat is een getal maal zichzelf.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'regel', front:'Wat betekent √36?', back:'Het niet-negatieve getal waarvan het kwadraat 36 is: 6', note:'De hoofdwortel is nooit negatief.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'regel', front:'Welke rekenvolgorde gebruik je?', back:'1. Haakjes\n2. Kwadrateren / machten\n3. Vermenigvuldigen en delen\n4. Optellen en aftrekken', note:'Werk bij gelijke prioriteit van links naar rechts.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'valkuil', front:'Waarom is (-5)² niet hetzelfde als -5²?', back:'(-5)² = 25, maar -5² = -(5²) = -25', note:'Haakjes bepalen of het minteken mee in het kwadraat gaat.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'regel', front:'Wat is het verschil tussen 5² en 2·5²?', back:'5² is 25, maar 2·5² is 2 × 25 = 50', note:'Eerst kwadrateren, dan vermenigvuldigen.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'valkuil', front:'Mag √49 ook -7 zijn?', back:'Nee. √49 betekent hier de hoofdwortel en die is 7.', note:'Wel geldt dat 7² en (-7)² allebei 49 zijn.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'regel', front:'Hoe lees je (3/5)²?', back:'Drie vijfde in het kwadraat: 9/25', note:'Teller én noemer worden gekwadrateerd.'},
+  {section:'6.1 Kwadraten', mode:'theory', topic:'strategie', front:'Wat is een goede mentale aanpak bij machten met een minteken?', back:'Kijk eerst of het minteken binnen of buiten de haakjes staat.', note:'Dat voorkomt veel fouten.'},
+
+  // 6.1 Kwadraten - Praktijk
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: 6²', back:'36'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: (-4)²', back:'16'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'valkuil', front:'Bereken: -4²', back:'-16', note:'Geen haakjes, dus eerst 4².'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: √81', back:'9'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: 2 + 3²', back:'11'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'stappen', front:'Wat is de eerste stap bij 2 + 3² · 4?', back:'Eerst 3² uitrekenen.'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: (1/2)²', back:'1/4'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: 5² - 3²', back:'25 - 9 = 16'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: √49 + 3', back:'10'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'valkuil', front:'Is √36 gelijk aan 6 of ±6?', back:'6', note:'De wortel geeft de hoofdwortel.'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'snel', front:'Bereken: 4 · √9', back:'12'},
+  {section:'6.1 Kwadraten', mode:'practice', topic:'toets', front:'Bereken: (3 − 5)²', back:'4'},
+
+  // 6.2 Kwadratische formules - Theorie
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'begrip', front:'Wanneer is een formule kwadratisch?', back:'Als de hoogste macht van x gelijk is aan 2', note:'Bijvoorbeeld y = x² - 1 of y = 2x² - 8.'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'begrip', front:'Wat voor grafiek hoort bij een kwadratische formule?', back:'Een parabool'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'strategie', front:'Hoe bereken je y als x gegeven is in een formule?', back:'Vul x zorgvuldig in, zet negatieve getallen vaak tussen haakjes en reken stap voor stap uit.'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'valkuil', front:'Waarom zet je bij x = -3 meestal haakjes in de formule?', back:'Zodat je duidelijk ziet wat er gekwadrateerd wordt: (-3)² in plaats van -3²'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'inzicht', front:'Wat gebeurt er vaak met de grafiek als de x²-term positief is?', back:'De parabool opent omhoog'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'inzicht', front:'Wat gebeurt er vaak met de grafiek als de x²-term negatief is?', back:'De parabool opent omlaag'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'strategie', front:'Hoe kun je een parabool snel tekenen?', back:'Maak een tabel met meerdere x-waarden, bereken de y-waarden en teken een vloeiende kromme.'},
+  {section:'6.2 Kwadratische formules', mode:'theory', topic:'valkuil', front:'Waarom is y = -x² + 4 iets anders dan y = (-x)² + 4?', back:'Bij -x² blijft het minteken buiten het kwadraat; (-x)² wordt positief.'},
+
+  // 6.2 Praktijk
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Bereken y voor x = 3 bij y = x² - 1', back:'8'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Bereken y voor x = -2 bij y = x² + 5', back:'9'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'valkuil', front:'Bereken y voor x = -3 bij y = x² - 4', back:'5', note:'(-3)² = 9'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Bereken y voor x = -2 bij y = -x² + 7', back:'3'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'stappen', front:'Wat is de eerste stap bij x = -4 invullen in y = x² + 2?', back:'Schrijf y = (-4)² + 2'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Welk soort grafiek hoort bij y = 2x² - 8?', back:'Een parabool'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Opent de grafiek van y = -3x² + 1 omhoog of omlaag?', back:'Omlaag'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Bereken y voor x = 0 bij y = x² - 6', back:'-6'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Bereken y voor x = 2 bij y = (x - 1)²', back:'1'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'valkuil', front:'Bereken y voor x = -1 bij y = (x - 2)²', back:'9'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'toets', front:'Wat is y bij x = 1 en formule y = x² - 2x?', back:'-1'},
+  {section:'6.2 Kwadratische formules', mode:'practice', topic:'inzicht', front:'Noem twee symmetrische x-waarden bij y = x² - 1 die dezelfde y geven.', back:'Bijvoorbeeld x = -2 en x = 2'},
+
+  // 6.3 Grafieken - Theorie
+  {section:'6.3 Grafieken', mode:'theory', topic:'begrip', front:'Wat voor grafiek hoort bij een lineaire formule?', back:'Een rechte lijn'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'begrip', front:'Wat voor grafiek hoort bij een kwadratische formule?', back:'Een parabool'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'strategie', front:'Hoe teken je een lineaire grafiek snel?', back:'Maak een tabel met twee punten, zet ze in het assenstelsel en trek een rechte lijn.'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'strategie', front:'Hoe teken je een kwadratische grafiek snel?', back:'Maak een tabel met meerdere punten, plot ze en teken een vloeiende parabool.'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'begrip', front:'Wat betekent snijpunt van twee grafieken?', back:'Een punt dat op beide grafieken ligt'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'inzicht', front:'Waarom heb je voor een parabool meestal meer punten nodig dan voor een lijn?', back:'Omdat een parabool krom loopt en een lijn recht is.'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'strategie', front:'Wat doe je nadat je punten uit een tabel hebt berekend?', back:'Je zet de punten in het assenstelsel en verbindt ze passend: recht bij lineair, vloeiend bij kwadratisch.'},
+  {section:'6.3 Grafieken', mode:'theory', topic:'valkuil', front:'Waarom is “punten verbinden” bij een parabool anders dan bij een lijn?', back:'Bij een parabool trek je geen hoekige stukjes, maar een vloeiende kromme.'},
+
+  // 6.3 Praktijk
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Bij welke formule hoort een lijn: y = 2x - 1 of y = x² - 1?', back:'y = 2x - 1'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Bij welke formule hoort een parabool: y = x² - 1 of y = x + 4?', back:'y = x² - 1'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Geef twee punten van y = 2x - 1', back:'Bijvoorbeeld (0, -1) en (1, 1)'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Geef een punt van y = x² - 1 bij x = 0', back:'(0, -1)'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Geef een punt van y = x² - 1 bij x = 2', back:'(2, 3)'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'stappen', front:'Hoeveel punten heb je minimaal nodig om een lijn te tekenen?', back:'Twee'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'stappen', front:'Kun je een parabool betrouwbaar tekenen met maar twee punten?', back:'Nee, meestal niet.'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'inzicht', front:'Welke grafiek stijgt eerst en daalt later nooit: een lijn of een parabool omhoog?', back:'Een lijn kan constant stijgen; een parabool omhoog daalt eerst en stijgt daarna.'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Zijn de punten (-1,0) en (1,0) mogelijk op dezelfde parabool y = x² - 1?', back:'Ja'},
+  {section:'6.3 Grafieken', mode:'practice', topic:'toets', front:'Welke grafiek is symmetrisch: lijn of parabool?', back:'Parabool'},
+
+  // 6.4 Rekenen met letters - Theorie
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'regel', front:'Hoe herleid je  a + a + a?', back:'3a', note:'Gelijke termen tel je als aantallen op.'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'regel', front:'Wat betekent 5q · -3p?', back:'-15pq', note:'Eerst de getallen, dan de letters in alfabetische volgorde.'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'regel', front:'Wat doe je met vermenigvuldigingspunten tussen letters?', back:'Je laat ze meestal weg: a·b schrijf je als ab'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'regel', front:'In welke volgorde schrijf je letters meestal?', back:'In alfabetische volgorde'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'valkuil', front:'Mag je 5a + 3b herleiden?', back:'Nee, want het zijn geen gelijksoortige termen.'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'begrip', front:'Wanneer zijn termen gelijksoortig?', back:'Als precies dezelfde letters voorkomen, met dezelfde machten'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'valkuil', front:'Waarom is 3x + 2y niet gelijksoortig?', back:'Omdat x en y verschillende letters zijn.'},
+  {section:'6.4 Rekenen met letters', mode:'theory', topic:'valkuil', front:'Waarom is 3a·2b iets anders dan 3a + 2b?', back:'Bij vermenigvuldigen krijg je 6ab; bij optellen kun je niet samenvoegen.'},
+
+  // 6.4 Praktijk
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: a + a + a + a', back:'4a'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 3x + 5x', back:'8x'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 7p - 2p', back:'5p'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 4a · 3b', back:'12ab'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'valkuil', front:'Herleid: 2a + 3b', back:'Kan niet verder'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: -3p · 5q', back:'-15pq'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 2q · 3p · 5q', back:'30pq²'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'valkuil', front:'Zijn 6x en 6x² gelijksoortig?', back:'Nee'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 8x + 7y + 2x + y', back:'10x + 8y'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'stappen', front:'Wat doe je eerst bij 5a · -2b?', back:'5 × -2 = -10'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 6p + 7pq', back:'Kan niet verder'},
+  {section:'6.4 Rekenen met letters', mode:'practice', topic:'toets', front:'Herleid: 9ab + 3ab', back:'12ab'},
+
+  // 6.5 Herleiden - Theorie
+  {section:'6.5 Herleiden', mode:'theory', topic:'regel', front:'Wat betekent herleiden?', back:'Een som of uitdrukking zo kort mogelijk schrijven'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'regel', front:'Hoe herleid je met gelijksoortige termen?', back:'Je telt of trekt de coëfficiënten op en laat de letters staan.'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'regel', front:'Mag je ook herleiden als er mintekens voorkomen?', back:'Ja, dan tel of trek je de getallen met teken samen.'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'valkuil', front:'Waarom is 5x + 3 geen 8x?', back:'Omdat 3 geen x-term is.'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'valkuil', front:'Waarom moet je letten op het verschil tussen optellen en vermenigvuldigen?', back:'Omdat 3x + 2x = 5x, maar 3x · 2x = 6x²'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'strategie', front:'Wat is een handige mentale aanpak bij herleiden?', back:'Zoek eerst termen die bij elkaar horen en groepeer die in je hoofd.'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'begrip', front:'Wat is de coëfficiënt in 7a?', back:'7'},
+  {section:'6.5 Herleiden', mode:'theory', topic:'begrip', front:'Wat blijft staan als je 2a + 5a herleidt?', back:'De letter a'},
+
+  // 6.5 Praktijk
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: 8a - 5a', back:'3a'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: 10p - 10p', back:'0'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: a - b + 2a - 2b', back:'3a - 3b'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: -xy + 12xy', back:'11xy'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: -c + -4c', back:'-5c'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: -5x + 6 + 12x - 8', back:'7x - 2'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: 2a + 7b - 3a - 5b', back:'-a + 2b'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'valkuil', front:'Herleid: 5a + 2b + 3a', back:'8a + 2b'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'valkuil', front:'Herleid: 5x + 3y', back:'Kan niet verder'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'stappen', front:'Welke termen horen bij elkaar in 3a + 4b - 2a?', back:'3a en -2a'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: 6ab + 3ab - 2ab', back:'7ab'},
+  {section:'6.5 Herleiden', mode:'practice', topic:'toets', front:'Herleid: 4x + 3 + 2x + 7', back:'6x + 10'},
+
+  // 6.6 Herleiden van breuken - Theorie
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'regel', front:'Hoe herleid je een breuk als teller en noemer een gemeenschappelijke factor hebben?', back:'Deel teller en noemer door dezelfde factor.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'regel', front:'Hoe tel je gelijknamige breuken op?', back:'Je telt alleen de tellers op; de noemer blijft gelijk.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'regel', front:'Wat doe je bij optellen of aftrekken van niet-gelijknamige breuken?', back:'Eerst gelijknamig maken.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'valkuil', front:'Mag je bij optellen van breuken zowel teller als noemer optellen?', back:'Nee. Alleen de tellers tel je op als de noemer al gelijk is.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'regel', front:'Hoe herleid je 10xy / 12x?', back:'Deel teller en noemer door 2 en door x → 5y / 6'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'valkuil', front:'Waarom is 5/a + 2/b niet gelijk aan 7/ab?', back:'Omdat je eerst gelijknamig moet maken; optellen van breuken werkt anders.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'strategie', front:'Wat is een handige eerste check bij een breuk met letters?', back:'Zoek naar factoren die zowel boven als onder voorkomen.'},
+  {section:'6.6 Herleiden van breuken', mode:'theory', topic:'begrip', front:'Wat betekent gelijknamig?', back:'De breuken hebben dezelfde noemer.'},
+
+  // 6.6 Praktijk
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 10xy / 12x', back:'5y / 6'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: -16b / 28ab', back:'-4 / 7a'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 5a/b - 2a/b', back:'3a / b'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 4a/x + 7a/x', back:'11a / x'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 15p/4q - 7p/4q', back:'2p / q'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 2a/5b - 3a/5b', back:'-a / 5b'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'stappen', front:'Wat moet je eerst doen bij 5/x + 4?', back:'4 schrijven als 4x/x of de breuken gelijknamig maken.'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 2/3p + 4/3p', back:'2 / p'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'valkuil', front:'Herleid: 5/x + 2/y', back:'Niet direct samen te nemen; eerst gelijknamig maken.'},
+  {section:'6.6 Herleiden van breuken', mode:'practice', topic:'toets', front:'Herleid: 3 - y/x', back:'(3x - y) / x'},
+
+  // Samenvatting theorie totaal
+  {section:'Theorie totaal', mode:'theory', topic:'overzicht', front:'Welke drie hoofdsoorten stof zitten in dit hoofdstuk?', back:'Rekenen met machten en wortels, werken met formules en grafieken, en herleiden met letters en breuken.'},
+  {section:'Theorie totaal', mode:'theory', topic:'overzicht', front:'Wat is de rode draad bij bijna alle fouten in dit hoofdstuk?', back:'Rekenvolgorde niet goed volgen of termen verwarren die niet bij elkaar horen.'},
+  {section:'Theorie totaal', mode:'theory', topic:'strategie', front:'Wat is slim als je geen papier gebruikt?', back:'Denk in kleine stappen: eerst herkennen welk type opgave het is, dan de regel kiezen, dan pas rekenen.'},
+  {section:'Theorie totaal', mode:'theory', topic:'strategie', front:'Welke vier vragen helpen bijna altijd?', back:'1. Wat voor soort opgave is dit?\n2. Welke regel hoort erbij?\n3. Welke stap komt eerst?\n4. Waar zit de valkuil?'},
+
+  // Praktijk totaal / diagnostische toets abstrahering
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Noem de eerste stap bij: (15 - 3)² - 80 : 4²', back:'Eerst de haakjes: 15 - 3 = 12'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Wat is daarna de volgende hoofdactie bij 12² - 80 : 4²?', back:'Kwadraten uitrekenen: 12² en 4²'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Bij een formule y = -3x² + 7 en x = 5: wat doe je eerst?', back:'Invullen: y = -3 · 5² + 7'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Bij y = (x - 5)² - 8 en x = -2: waarom zijn haakjes extra belangrijk?', back:'Omdat je krijgt (-2 - 5)² en niet -2 - 5²'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Welk soort grafiek hoort bij y = -x² + 6?', back:'Een parabool'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Welk soort grafiek hoort bij y = x + 4?', back:'Een lijn'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Herleid: 5a + 7a', back:'12a'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Herleid: 8x + 7y + 2x + y', back:'10x + 8y'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Herleid: 7 + p + 3p + q', back:'7 + 4p + q'},
+  {section:'Praktijk totaal', mode:'practice', topic:'diagnose', front:'Herleid: 10a/3b - 4a/3b', back:'2a / b'},
+
+  // Valkuilen totaal
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'(-2)² = ? en -2² = ?', back:'(-2)² = 4 en -2² = -4'},
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'Mag je 2x + 3 optellen tot 5x?', back:'Nee'},
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'Mag je 3x · 4y schrijven als 12xy?', back:'Ja'},
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'Mag je 5/x + 2/y direct samenvoegen?', back:'Nee'},
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'Is √49 gelijk aan ±7?', back:'Nee, aan 7'},
+  {section:'Valkuilen', mode:'theory', topic:'valkuil', front:'Zijn 3a en 3a² gelijksoortig?', back:'Nee'}
+];
+
+const categoryOrder = [
+  'Alles – theorie + praktijk',
+  'Theorie totaal',
+  'Praktijk totaal',
+  'Valkuilen',
+  '6.1 Kwadraten',
+  '6.2 Kwadratische formules',
+  '6.3 Grafieken',
+  '6.4 Rekenen met letters',
+  '6.5 Herleiden',
+  '6.6 Herleiden van breuken'
+];
+
+let currentCategory = 'Alles – theorie + praktijk';
+let currentMode = 'all';
+let currentDirection = 'frontback';
+let currentCards = [];
+let index = 0;
+let markedOnly = false;
+let marked = JSON.parse(localStorage.getItem('wiskunde_marked_v1') || '[]');
+
+const cardEl = document.getElementById('card');
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const frontNote = document.getElementById('frontNote');
+const backNote = document.getElementById('backNote');
+const frontTags = document.getElementById('frontTags');
+const backTags = document.getElementById('backTags');
+const frontLabel = document.getElementById('frontLabel');
+const backLabel = document.getElementById('backLabel');
+const progressText = document.getElementById('progressText');
+const setInfo = document.getElementById('setInfo');
+const categorySelect = document.getElementById('categorySelect');
+const modeSelect = document.getElementById('modeSelect');
+const directionSelect = document.getElementById('directionSelect');
+const markedOnlyBtn = document.getElementById('markedOnlyBtn');
+
+function saveMarked(){
+  localStorage.setItem('wiskunde_marked_v1', JSON.stringify(marked));
+}
+function cardId(c){ return `${c.section}||${c.mode}||${c.front}`; }
+
+function setupSelectors(){
+  categoryOrder.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat; opt.textContent = cat; categorySelect.appendChild(opt);
+  });
+  categorySelect.value = currentCategory;
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+
+function renderTags(target, card){
+  target.innerHTML = '';
+  const tags = [
+    {text: card.section, cls:''},
+    {text: card.mode === 'theory' ? 'Theorie' : 'Praktijk', cls:card.mode},
+    {text: card.topic, cls: card.topic === 'valkuil' ? 'pitfall' : ''}
+  ];
+  tags.forEach(t => {
+    const span = document.createElement('span');
+    span.className = `tag ${t.cls}`.trim();
+    span.textContent = t.text;
+    target.appendChild(span);
+  });
+}
+
+function getFilteredCards(){
+  let list = [...cards];
+  if(currentCategory !== 'Alles – theorie + praktijk'){
+    list = list.filter(c => c.section === currentCategory);
+  } else {
+    list = list.filter(c => !['Theorie totaal','Praktijk totaal','Valkuilen'].includes(c.section));
+  }
+
+  if(currentMode === 'theory') list = list.filter(c => c.mode === 'theory');
+  if(currentMode === 'practice') list = list.filter(c => c.mode === 'practice');
+  if(currentMode === 'pitfalls') list = list.filter(c => c.topic === 'valkuil');
+  if(markedOnly) list = list.filter(c => marked.includes(cardId(c)));
+  return list;
+}
+
+function updateSet(){
+  currentCards = getFilteredCards();
+  if(index >= currentCards.length) index = 0;
+  updateCard();
+}
+
+function updateCard(){
+  cardEl.classList.remove('is-flipped');
+  if(currentCards.length === 0){
+    frontText.innerHTML = 'Geen kaarten';
+    backText.innerHTML = 'Pas je filters aan';
+    frontNote.textContent = '';
+    backNote.textContent = '';
+    frontTags.innerHTML = '';
+    backTags.innerHTML = '';
+    progressText.textContent = '0 kaarten';
+    setInfo.textContent = currentCategory;
+    markedOnlyBtn.textContent = `Focus op gemarkeerd (${marked.length})`;
+    cardEl.classList.remove('marked');
+    return;
+  }
+
+  const c = currentCards[index];
+  const isReversed = currentDirection === 'backfront';
+  frontText.innerHTML = escapeHtml(isReversed ? c.back : c.front);
+  backText.innerHTML = escapeHtml(isReversed ? c.front : c.back);
+  frontNote.textContent = isReversed ? '' : (c.note || 'Denk eerst zelf 3 seconden na voordat je flipt.');
+  backNote.textContent = isReversed ? (c.note || '') : (c.note || '');
+
+  frontLabel.textContent = isReversed ? 'Antwoord / regel' : (c.mode === 'theory' ? 'Theorie / vraag' : 'Praktijk / vraag');
+  backLabel.textContent = isReversed ? (c.mode === 'theory' ? 'Theorie / vraag' : 'Praktijk / vraag') : 'Antwoord / uitleg';
+
+  renderTags(frontTags, c);
+  renderTags(backTags, c);
+  progressText.textContent = `Kaart ${index + 1} van ${currentCards.length}`;
+  setInfo.textContent = currentCategory;
+  markedOnlyBtn.textContent = `Focus op gemarkeerd (${marked.length})`;
+  cardEl.classList.toggle('marked', marked.includes(cardId(c)));
+}
+
+function flipCard(){ if(currentCards.length) cardEl.classList.toggle('is-flipped'); }
+function nextCard(){ if(!currentCards.length) return; index = (index + 1) % currentCards.length; updateCard(); }
+function prevCard(){ if(!currentCards.length) return; index = (index - 1 + currentCards.length) % currentCards.length; updateCard(); }
+function shuffleCards(){
+  for(let i=currentCards.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [currentCards[i], currentCards[j]]=[currentCards[j], currentCards[i]]; }
+  index = 0; updateCard();
+}
+function toggleMark(){
+  if(!currentCards.length) return;
+  const id = cardId(currentCards[index]);
+  if(marked.includes(id)) marked = marked.filter(x => x !== id); else marked.push(id);
+  saveMarked(); updateCard(); renderList();
+}
+function toggleMarkedOnly(){ markedOnly = !markedOnly; index = 0; updateSet(); }
+function resetProgress(){
+  if(confirm('Gemarkeerde kaarten wissen?')){
+    marked = []; saveMarked(); markedOnly = false; updateSet();
+  }
+}
+
+function openList(){ document.getElementById('listModal').style.display = 'block'; renderList(); }
+function closeList(){ document.getElementById('listModal').style.display = 'none'; }
+
+function renderList(){
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const container = document.getElementById('listContainer');
+  const list = getFilteredCards().filter(c =>
+    c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q) || c.section.toLowerCase().includes(q) || c.topic.toLowerCase().includes(q)
+  );
+  container.innerHTML = '';
+  list.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <div class="top">
+        <div>
+          <div class="meta">${c.section} • ${c.mode === 'theory' ? 'Theorie' : 'Praktijk'} • ${c.topic}</div>
+          <div class="front">${escapeHtml(c.front)}</div>
+          <div class="backtxt">${escapeHtml(c.back)}</div>
+        </div>
+        <div style="font-size:1.2rem;color:#f59e0b">${marked.includes(cardId(c)) ? '★' : ''}</div>
+      </div>`;
+    div.onclick = () => {
+      currentCards = getFilteredCards();
+      index = currentCards.findIndex(x => cardId(x) === cardId(c));
+      if(index < 0) index = 0;
+      updateCard(); closeList();
+    };
+    container.appendChild(div);
+  });
+}
+
+categorySelect.addEventListener('change', e => { currentCategory = e.target.value; index = 0; updateSet(); });
+modeSelect.addEventListener('change', e => { currentMode = e.target.value; index = 0; updateSet(); });
+directionSelect.addEventListener('change', e => { currentDirection = e.target.value; updateCard(); });
+
+setupSelectors();
+updateSet();
+</script>
+</body>
+</html>

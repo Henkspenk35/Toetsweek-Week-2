@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toetsweek - Week 2</title>
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f7f6;
+  margin:0;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+h1{
+  margin-bottom:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  width:100%;
+  max-width:600px;
+}
+.card{
+  background:white;
+  padding:30px;
+  border-radius:16px;
+  text-align:center;
+  font-weight:bold;
+  font-size:1.2rem;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+  cursor:pointer;
+  transition:0.2s;
+}
+.card:hover{
+  transform:scale(1.03);
+}
+.small{
+  font-size:0.9rem;
+  margin-top:8px;
+  color:#666;
+}
+</style>
+</head>
+<body>
+
+<h1>Toetsweek - Week 2</h1>
+
+<div class="grid">
+  <div class="card" onclick="openFile('Geschiedenis_final_flashcards_v4_jaartallen_omgedraaid (1).html')">
+    Geschiedenis
+  </div>
+
+  <div class="card" onclick="openFile('wiskunde_flashcards_volledig.html')">
+    Wiskunde
+  </div>
+
+  <div class="card" onclick="openFile('Global_Perspectives_Egypte_template_v6_fixed_oefenzinnen.html')">
+    Global Perspectives
+  </div>
+
+  <div class="card">
+    Aardrijkskunde
+    <div class="small">(komt nog)</div>
+  </div>
+</div>
+
+<script>
+function openFile(file){
+  window.location.href = file;
+}
+</script>
+
+</body>
+</html>

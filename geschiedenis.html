@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Geschiedenis 3.3 – Flashcards</title>
+  <style>
+    :root{
+      --primary:#2c3e50;
+      --orange:#f39c12;
+      --blue:#3498db;
+      --green:#27ae60;
+      --bg:#f4f7f6;
+      --muted:#7f8c8d;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+      padding:18px;
+      color:var(--primary);
+    }
+    .app{
+      width:100%;
+      max-width:430px;
+    }
+    h1{
+      font-size:1.25rem;
+      margin:8px 0 6px;
+      text-align:center;
+    }
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      font-size:.92rem;
+      margin-bottom:8px;
+    }
+    .section-chip{
+      display:inline-block;
+      background:#e8f4ee;
+      color:#1f7a52;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:.8rem;
+      font-weight:700;
+      margin:0 auto 8px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:center;
+    }
+    .scene{
+      width:100%;
+      height:280px;
+      perspective:1000px;
+      margin:16px 0;
+    }
+    .card{
+      width:100%;
+      height:100%;
+      position:relative;
+      transition:transform .4s;
+      transform-style:preserve-3d;
+      cursor:pointer;
+    }
+    .card.is-flipped{ transform:rotateY(180deg); }
+    .card-face{
+      position:absolute;
+      inset:0;
+      backface-visibility:hidden;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      border-radius:25px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      background:#fff;
+      border:1px solid #d9e1e5;
+    }
+    .card-front{
+      color:var(--primary);
+    }
+    .card-back{
+      background:var(--primary);
+      color:#fff;
+      transform:rotateY(180deg);
+    }
+    .label{
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:10px;
+      opacity:.55;
+      font-weight:700;
+    }
+    .meta{
+      position:absolute;
+      top:16px;
+      left:18px;
+      right:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:.72rem;
+      opacity:.75;
+      gap:10px;
+    }
+    .star{
+      position:absolute;
+      top:14px;
+      right:18px;
+      font-size:1.5rem;
+      color:var(--orange);
+      display:none;
+    }
+    .is-marked .star{ display:block; }
+    .is-marked .card-face{ border:3px solid var(--orange); }
+    #text-front, #text-back{
+      font-size:1.28rem;
+      line-height:1.35;
+      font-weight:800;
+      max-width:100%;
+      overflow-wrap:break-word;
+      white-space:pre-wrap;
+    }
+    .small-back #text-back,
+    .small-front #text-front{
+      font-size:1rem;
+      font-weight:700;
+      line-height:1.45;
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      width:100%;
+    }
+    button, select{
+      padding:14px 12px;
+      border:none;
+      border-radius:15px;
+      background:#fff;
+      color:var(--primary);
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.05);
+      font-size:.92rem;
+    }
+    .btn-orange{ background:var(--orange); color:#fff; grid-column:span 2; }
+    .btn-blue{ background:var(--blue); color:#fff; grid-column:span 2; }
+    .btn-green{ background:var(--green); color:#fff; grid-column:span 2; }
+    .btn-dark{ background:var(--primary); color:#fff; grid-column:span 2; opacity:.9; font-size:.78rem; }
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .progress{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.87rem;
+      font-weight:700;
+      text-align:center;
+    }
+    #list-modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:#fff;
+      z-index:1000;
+      overflow-y:auto;
+      padding:18px;
+    }
+    .sticky{
+      position:sticky;
+      top:0;
+      background:#fff;
+      padding-bottom:12px;
+    }
+    .search-box{
+      width:100%;
+      padding:15px;
+      border-radius:12px;
+      border:1px solid #d9e1e5;
+      margin-bottom:10px;
+      font-size:1rem;
+    }
+    .sort-bar{
+      display:flex;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .sort-bar button{
+      flex:1;
+      padding:10px;
+      font-size:.78rem;
+      background:#eef2f4;
+      box-shadow:none;
+    }
+    .sort-bar button.active{
+      background:var(--primary);
+      color:#fff;
+    }
+    .word-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:14px 4px;
+      border-bottom:1px solid #edf1f3;
+      cursor:pointer;
+    }
+    .term{
+      font-weight:800;
+      margin-bottom:4px;
+      color:var(--primary);
+    }
+    .def{
+      color:#5c6b73;
+      line-height:1.4;
+      font-size:.94rem;
+    }
+    .tag{
+      display:inline-block;
+      margin-top:6px;
+      font-size:.72rem;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2f4;
+      color:#5c6b73;
+      font-weight:700;
+    }
+    .close-list{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      background:var(--primary);
+      color:#fff;
+      padding:15px 24px;
+      border-radius:30px;
+      z-index:20;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar"><div class="section-chip" id="section-chip">Paragraaf 3.3</div></div>
+    <h1>Geschiedenis – Flashcards</h1>
+    <div class="subtitle">De Grieks-Romeinse cultuur</div>
+
+    <div class="toolbar">
+      <select id="section-select" onchange="changeSection()"></select>
+    </div>
+
+    <div class="scene" onclick="flip()">
+      <div class="card" id="card-element">
+        <div class="card-face card-front" id="front-face">
+          <div class="meta"><span id="card-type-front">Begrip / vraag</span><span id="card-topic-front"></span></div>
+          <div class="star">★</div>
+          <div class="label" id="label-front">Voorkant</div>
+          <div id="text-front">...</div>
+        </div>
+        <div class="card-face card-back" id="back-face">
+          <div class="meta"><span id="card-type-back">Antwoord / uitleg</span><span id="card-topic-back"></span></div>
+          <div class="label" id="label-back">Achterkant</div>
+          <div id="text-back">...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="prev()">⬅️ Vorige</button>
+      <button onclick="next()">Volgende ➡️</button>
+      <button class="btn-orange" onclick="mark()">❌ Ken ik nog niet</button>
+      <button onclick="shuffle()">🔀 Husselen</button>
+      <button id="lang-btn" onclick="toggleLang()">🔄 Vraag ➔ Antwoord</button>
+      <button id="filter-btn" onclick="toggleFilter()">Focus op moeilijk (0)</button>
+      <button class="btn-green" onclick="toggleMode()" id="mode-btn">Modus: alles</button>
+      <button class="btn-blue" onclick="openList()">📋 Kaartenlijst & zoeken</button>
+      <button class="btn-dark" onclick="resetProgress()">🗑️ Voortgang wissen</button>
+    </div>
+
+    <div class="progress" id="progress">Kaart 1 van ...</div>
+  </div>
+
+  <div id="list-modal">
+    <div class="sticky">
+      <input type="text" class="search-box" id="search-input" placeholder="Zoek begrip, vraag of uitleg..." oninput="renderList()">
+      <div class="sort-bar">
+        <button id="sort-std" class="active" onclick="setSort('std')">Standaard</button>
+        <button id="sort-diff" onclick="setSort('diff')">Moeilijk ★</button>
+      </div>
+    </div>
+    <div id="list-container"></div>
+    <button class="close-list" onclick="closeList()">SLUITEN ✖</button>
+  </div>
+
+  <script>
+    const sections = [
+
+      {
+        id: "alles",
+        title: "Geschiedenis 3.3 t/m 4.4 – Alles samen",
+        cards: [
+          // gevuld na initialisatie
+        ]
+      },
+      {
+        id: "3.3",
+        title: "Geschiedenis 3.3 – De Grieks-Romeinse cultuur",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"Romeins recht", back:"Wetten in het Romeinse Rijk.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Germanen", back:"Verzameling volkeren die oorspronkelijk in het gebied van Duitsland en Nederland leefden, zoals de Friezen en de Bataven.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"West-Romeinse Rijk", back:"Deel van het Romeinse Rijk dat vanaf de 4e eeuw vanuit Italië werd bestuurd en in 476 ten onder ging.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Oost-Romeinse Rijk", back:"Deel van het Romeinse Rijk dat vanaf de 4e eeuw n.C. vanuit Constantinopel werd bestuurd. Dit rijk bleef bestaan tot 1453.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Volksverhuizingen", back:"Grote verplaatsing van volken vanuit Noord- en Oost-Europa naar het zuiden en westen in de 4e en 5e eeuw n.C.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Byzantijnse Rijk", back:"Het Oost-Romeinse Rijk.", short:true},
+
+          {type:"theorie", topic:"leerdoel", front:"Noem enkele kenmerken van de Romeinse cultuur.", back:"Romeinen namen veel over van de Griekse cultuur, zoals architectuur, beeldhouwkunst, dichtkunst en godsdienst. Daarnaast hadden ze eigen kenmerken, zoals badhuizen, gladiatorengevechten, de toga, sterk bestuur, knappe ingenieurs en uitgebreid Romeins recht."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe verspreidde de Grieks-Romeinse cultuur zich?", back:"Door veroveringen en Romeinse aanwezigheid. De Romeinen stichtten legerkampen, landbouwbedrijven en steden, bouwden tempels, badhuizen, aquaducten en wegen, en brachten zo hun manier van leven naar grote delen van Europa, Noord-Afrika en het Midden-Oosten."},
+          {type:"theorie", topic:"leerdoel", front:"Welke gevolgen had de Grieks-Romeinse cultuur voor Germanen?", back:"Germanen namen veel over van de Romeinen: Romeinse spullen, Romeinse kleding, Latijnse namen, schrift en soms functies in het Romeinse leger. Hun cultuur veranderde daardoor sterk."},
+          {type:"theorie", topic:"leerdoel", front:"Waarom was het uiteenvallen van het West-Romeinse Rijk een geleidelijk proces?", back:"Omdat het rijk al langer verzwakte door meerdere problemen tegelijk: een te klein leger, hoge belastingen, minder opbrengsten, soldaten die vooral hun generaal trouw waren en politieke strijd om het keizerschap. Daarna kwam er extra druk door volksverhuizingen en invallen."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe ontwikkelde het Oost-Romeinse Rijk zich vanaf de late oudheid?", back:"Het bleef na de val van het westen nog bijna duizend jaar bestaan, werd bestuurd vanuit Constantinopel, sprak vooral Grieks en heet daarom ook het Byzantijnse Rijk. Het was lang machtig, maar verloor later gebied en viel in 1453 definitief."},
+
+          {type:"theorie", topic:"romeinse cultuur", front:"Waarom spreken we van een Grieks-Romeinse cultuur?", back:"Omdat de Romeinen sterk onder de indruk waren van de Grieken en veel van hun cultuur overnamen, bijvoorbeeld architectuur, beeldhouwkunst, dichtkunst en goden. Daardoor ontstond een mengcultuur van Griekse en Romeinse elementen."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Welke Griekse goden namen de Romeinen over?", back:"Ze vereerden Griekse goden onder Romeinse namen. Zo werd Zeus Jupiter, Hera werd Juno en Ares werd Mars."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Welke Griekse gewoonte namen de Romeinen ook over?", back:"Bijvoorbeeld het gebruik van olijfolie."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Noem twee typisch Romeinse gewoonten of kenmerken.", back:"Voorbeelden zijn de toga, gladiatorengevechten, badhuizen, sterk bestuur, wegenbouw en het Romeinse recht."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Wat was een toga?", back:"Een lang wit gewaad dat Romeinse mannen aantrokken voor officiële gelegenheden.", short:true},
+          {type:"theorie", topic:"romeinse cultuur", front:"Waarom waren Romeinse badhuizen belangrijk?", back:"Ze waren niet alleen om je te wassen of te ontspannen, maar ook om elkaar te ontmoeten en te praten. Ze speelden dus een sociale rol."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Waar stonden de Romeinen technisch en bestuurlijk om bekend?", back:"Om hun kundige architecten en ingenieurs, hun wegen, bruggen, forten, waterleidingen, centrale verwarmingssystemen en riolen, en om hun sterke organisatie van leger en bestuur."},
+          {type:"theorie", topic:"romeinse cultuur", front:"Waarom is het Romeinse recht belangrijk?", back:"Omdat het heel doordacht en uitgebreid was en omdat ons rechtssysteem er voor een deel nog steeds op is gebaseerd."},
+
+          {type:"theorie", topic:"lokale culturen", front:"Moesten overwonnen volken de Romeinse cultuur volledig overnemen?", back:"Nee. Ze mochten vaak hun eigen geloof en gewoontes houden, maar de aanwezigheid van de Romeinen had wel veel invloed op hun cultuur."},
+          {type:"theorie", topic:"lokale culturen", front:"Hoe veranderde de lokale bevolking door contact met de Romeinen?", back:"Ze leerden de Romeinse manier van leven kennen via handel, werk en bestuur. Vooral leiders namen Romeinse kleding, namen en taal over om kans te maken op belangrijke posities in het rijk."},
+          {type:"theorie", topic:"lokale culturen", front:"Wat veranderde er bij de Germanen na contact met de Romeinen?", back:"Aanvankelijk waren het vrij eenvoudige boeren zonder schrift. Een eeuw later hadden Germaanse leiders hoge functies in het Romeinse leger, Latijnse namen en konden sommigen lezen en schrijven."},
+          {type:"theorie", topic:"lokale culturen", front:"Wat namen de Germanen religieus over van de Romeinen?", back:"Ze bleven hun eigen goden vereren, maar deden dat soms op Romeinse wijze, bijvoorbeeld in tempels in plaats van alleen op heilige plekken in de natuur."},
+          {type:"theorie", topic:"lokale culturen", front:"Wie waren de Bataven?", back:"Een Germaans volk dat in de 1e eeuw n.C. in het Nederlandse rivierengebied woonde.", short:true},
+          {type:"theorie", topic:"lokale culturen", front:"Wie of wat was Hercules Magusanus?", back:"Een god die laat zien hoe culturen konden versmelten: een combinatie van de Romeinse god Hercules en de Bataafse god Magusanus."},
+          {type:"theorie", topic:"lokale culturen", front:"Welke andere groep nam ook veel over van de Romeinse cultuur?", back:"De Kelten. Ook zij namen veel onderdelen van de Romeinse cultuur over."},
+          {type:"theorie", topic:"lokale culturen", front:"Wie waren de Galliërs?", back:"Een Keltisch volk dat in het gebied woonde van het huidige Frankrijk.", short:true},
+
+          {type:"theorie", topic:"uiteenvallen", front:"Hoe groot was het Romeinse Rijk rond de 4e eeuw n.C. vergeleken met rond 200 n.C.?", back:"Het was in de 4e eeuw niet meer zo groot als rond 200 n.C., maar nog steeds een groot deel van Europa en het Middellandse Zeegebied."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat was het eerste grote probleem van het Romeinse Rijk?", back:"Het leger. Dat bestond uit ongeveer 300.000 man, maar dat was te klein om de uitgestrekte grenzen goed te bewaken."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat was het tweede grote probleem van het Romeinse Rijk?", back:"De bevolking moest veel belasting betalen om het leger te onderhouden. Daardoor verlieten veel boeren hun land, bleven akkers onbewerkt en daalden de inkomsten van het rijk."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat was het derde grote probleem van het Romeinse Rijk?", back:"De soldaten voelden zich door de lange diensttijd vaak meer verbonden met hun generaal dan met de keizer."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat was het vierde grote probleem van het Romeinse Rijk?", back:"Het keizerschap. Als een keizer slecht regeerde of overleed, ontstonden er vaak machtsstrijd en snelle opvolgingen, waardoor het rijk slecht bestuurd werd."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat gebeurde er in 395?", back:"Toen werd het Romeinse Rijk definitief in tweeën verdeeld: een keizer voor het West-Romeinse Rijk en een keizer voor het Oost-Romeinse Rijk.", short:true},
+          {type:"theorie", topic:"uiteenvallen", front:"Waarom ging het West-Romeinse Rijk in de 5e eeuw ten onder?", back:"Het was door de vier genoemde problemen verzwakt en kreeg ook nog te maken met onrust aan de grenzen, invallen en volksverhuizingen. Daardoor verdween stap voor stap de samenhang in het rijk."},
+          {type:"theorie", topic:"uiteenvallen", front:"Waarom trokken volken als Franken, Visigoten en Vandalen het rijk binnen?", back:"Omdat de Hunnen uit Centraal-Azië hun gebieden met geweld inpikten. Deze volken zochten bescherming, nieuwe landbouwgrond en een beter leven."},
+          {type:"theorie", topic:"uiteenvallen", front:"Waarom noem je deze nieuwkomers niet simpelweg 'woeste barbaren'?", back:"Omdat veel van deze volken de Grieks-Romeinse cultuur juist goed kenden. Ze waren niet alleen verwoesters, maar ook mensen die bescherming en bestaanszekerheid zochten."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat zijn volksverhuizingen?", back:"Grote verplaatsingen van volken die op gang kwamen doordat nieuwe groepen zich gingen verplaatsen en andere volken meesleurden of verdreven."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat was uiteindelijk het gevolg van de volksverhuizingen voor het westen?", back:"Meer onrust, plunderingen, leiders die eigen koninkrijkjes stichtten, steeds minder belastinginkomsten en een sterk verslechterende economie. Zo viel het West-Romeinse Rijk uiteindelijk uiteen."},
+          {type:"theorie", topic:"uiteenvallen", front:"Wat gebeurde er in 476?", back:"De laatste West-Romeinse keizer werd afgezet. Vaak wordt dit gezien als het definitieve einde van de oudheid en het begin van de middeleeuwen.", short:true},
+
+          {type:"theorie", topic:"byzantium", front:"Waarom wordt het Oost-Romeinse Rijk ook het Byzantijnse Rijk genoemd?", back:"Omdat de hoofdstad Constantinopel vroeger Byzantium heette.", short:true},
+          {type:"theorie", topic:"byzantium", front:"Wat was de hoofdstad van het Oost-Romeinse Rijk?", back:"Constantinopel, het huidige Istanbul.", short:true},
+          {type:"theorie", topic:"byzantium", front:"Hoe noemden de bewoners van het Byzantijnse Rijk zichzelf?", back:"Romeinen, ook al spraken zij vooral Grieks en hoorde de stad Rome niet meer bij hun rijk.", short:true},
+          {type:"theorie", topic:"byzantium", front:"Welke taal sprak men vooral in het Byzantijnse Rijk?", back:"Grieks.", short:true},
+          {type:"theorie", topic:"byzantium", front:"Waarom was Constantinopel zo gunstig gelegen?", back:"De stad lag aan de Bosporus, tussen Azië en Europa. Daardoor kon er veel handel worden gedreven en werd er veel geld verdiend."},
+          {type:"theorie", topic:"byzantium", front:"Hoe zag Constantinopel eruit als machtige hoofdstad?", back:"Het was een enorme stad vol prachtige kerken, paleizen, badhuizen en andere indrukwekkende gebouwen."},
+          {type:"theorie", topic:"byzantium", front:"Wat veranderde er in het christendom tussen oost en west?", back:"In de 11e eeuw viel de christelijke kerk definitief uiteen, waardoor Oost- en West-Europa aparte christelijke kerken kregen."},
+          {type:"theorie", topic:"byzantium", front:"Bleef het Byzantijnse Rijk altijd even groot en machtig?", back:"Nee. Het was eeuwenlang machtig en veroverde soms zelfs delen van het westen terug, maar verloor later veel gebied, vooral toen Arabische veroveraars hun rijk uitbreidden."},
+          {type:"theorie", topic:"byzantium", front:"Wanneer hield het Oost-Romeinse Rijk definitief op te bestaan?", back:"In 1453, toen de Turkse sultan Constantinopel innam.", short:true},
+
+          {type:"theorie", topic:"extra", front:"Wat laat de munt van Amalasuntha zien in deze paragraaf?", back:"Dat er in de tijd na het Romeinse Rijk nieuwe koninkrijken ontstonden in voormalige Romeinse gebieden, zoals het Ostrogotische koninkrijk in Italië."},
+          {type:"theorie", topic:"extra", front:"Wie was Amalasuntha?", back:"Zij stond van 526 tot 535 aan het hoofd van het Ostrogotische koninkrijk in Italië.", short:true}
+        ]
+      }
+    
+,
+      {
+        id: "3.4",
+        title: "Geschiedenis 3.4 – Het christendom in het Romeinse Rijk",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"jodendom", back:"Geloof van de joden, een volk dat in één god gelooft.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"monotheïsme", back:"Het geloof in één god.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"christendom", back:"Geloof in één god volgens de leer van Jezus Christus.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Bijbel", back:"Het heilige boek van de christenen.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Oude Testament", back:"Het eerste deel van de Bijbel, waarin de heilige boeken van de joden zijn opgenomen.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"Nieuwe Testament", back:"Het tweede deel van de Bijbel, waarin de verhalen staan over het leven van Jezus en zijn eerste volgelingen.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"paus", back:"De hoogste bestuurder van de christelijke (katholieke) kerk.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"kerk", back:"1) Gebouw waarin christenen bij elkaar komen om te bidden. 2) Het geheel van alle christelijke gelovigen en hun bestuurders.", short:true},
+
+          {type:"theorie", topic:"leerdoel", front:"Wat is het verschil tussen monotheïstische en polytheïstische godsdiensten?", back:"Monotheïstische godsdiensten geloven in één god, zoals het jodendom en christendom. Polytheïstische godsdiensten geloven in meerdere goden, zoals de Romeinse godsdienst."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe ontstond het christendom?", back:"Het christendom ontstond binnen het jodendom rond Jezus van Nazareth. Zijn volgelingen zagen hem als de verlosser die door God was gestuurd en gingen zich christenen noemen."},
+          {type:"theorie", topic:"leerdoel", front:"Wat zijn belangrijke kenmerken van de christelijke geloofsleer?", back:"Belangrijke kenmerken zijn naastenliefde, verdraagzaamheid, vergevingsgezindheid, eenvoud en het geloof in leven na de dood."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe ontwikkelde het christendom zich in de late oudheid?", back:"Het begon als kleine stroming binnen het jodendom, verspreidde zich over het Romeinse Rijk, werd eerst vervolgd, daarna in 313 toegestaan en aan het eind van de 4e eeuw staatsgodsdienst."},
+
+          {type:"theorie", topic:"jodendom", front:"Waarom was het jodendom bijzonder in vergelijking met andere godsdiensten in het Romeinse Rijk?", back:"Omdat joden in één god geloofden, heilige boeken hadden en dachten dat God hun het land Israël had beloofd."},
+          {type:"theorie", topic:"jodendom", front:"Waarom hadden de Romeinen moeite met de joden?", back:"Omdat joden hun monotheïsme heel belangrijk vonden en de keizer niet als god wilden vereren."},
+          {type:"theorie", topic:"jodendom", front:"Wat is monotheïsme?", back:"Het geloof in één god.", short:true},
+          {type:"theorie", topic:"jodendom", front:"Wat verwachtten veel joden in de Romeinse tijd?", back:"Dat er een verlosser zou komen die hen zou bevrijden van vreemde overheersers."},
+
+          {type:"theorie", topic:"ontstaan christendom", front:"Wie was Jezus van Nazareth volgens zijn volgelingen?", back:"Een door God gezonden verlosser, de Christus. Het woord Christus betekent 'hoge priester' of 'koning'."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Wat predikte Jezus over het 'koninkrijk van God'?", back:"Dat mensen op een betere manier moesten leven: menslievend, verdraagzaam, vergevingsgezind, vrijgevig en eenvoudig."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Wat zei Jezus over leven na de dood?", back:"Dat mensen na hun dood in de hemel verder zouden leven."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Hoe ontstond uit het jodendom een nieuw geloof?", back:"Sommige joden gingen Jezus zien als de verlosser. Zij noemden zich christenen en zo ontstond het christendom."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Waarom werd Jezus gekruisigd?", back:"Sommige joodse godsdienstige leiders zagen hem als een onruststoker en bedreiging voor hun positie en klaagden hem aan bij de Romeinse bestuurder van Judea."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Wat geloofden de volgelingen van Jezus na zijn dood?", back:"Dat Jezus na zijn dood weer levend was geworden en daarna naar de hemel was opgestegen."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Welke heilige boeken gebruiken christenen?", back:"De Bijbel. Die bestaat uit het Oude Testament, met joodse geschriften, en het Nieuwe Testament, met verhalen over Jezus en zijn volgelingen."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Wie hielp het christendom verspreiden in het Romeinse Rijk?", back:"Onder andere Paulus van Tarsus. Hij vond dat de boodschap van Jezus voor alle mensen was, niet alleen voor joden."},
+          {type:"theorie", topic:"ontstaan christendom", front:"Waarom sloeg de boodschap van Jezus vooral bij armen in de steden aan?", back:"Omdat het uitzicht op een beter leven na de dood hun hoop gaf."},
+
+          {type:"theorie", topic:"romeinse rijk", front:"Waarom veranderde de houding van Romeinse bestuurders tegenover christenen?", back:"Eerst zagen zij christenen als een ongevaarlijke joodse groep, maar toen steeds meer mensen christen werden en zij de keizer niet als god wilden vereren, zagen bestuurders hen als gevaar voor de eenheid van het rijk."},
+          {type:"theorie", topic:"romeinse rijk", front:"Waarom werden christenen vervolgd?", back:"Omdat het christendom verboden werd en christenen hun geloof soms niet wilden opgeven. Romeinse bestuurders vonden hen bedreigend voor de eenheid van het rijk."},
+          {type:"theorie", topic:"romeinse rijk", front:"Welke straffen kregen christenen soms?", back:"Ze werden gekruisigd, verbrand of tijdens spelen voor de leeuwen gegooid."},
+          {type:"theorie", topic:"romeinse rijk", front:"Welke keizer begon als eerste met christenvervolgingen?", back:"Keizer Nero, die regeerde van 54 tot 68 n.C.", short:true},
+          {type:"theorie", topic:"romeinse rijk", front:"Groeide het christendom ondanks de vervolgingen?", back:"Ja. In de 2e en 3e eeuw nam het aantal christenen toe en groeide ook hun organisatie."},
+          {type:"theorie", topic:"romeinse rijk", front:"Hoe organiseerden christenen zich in het Romeinse Rijk?", back:"Ze hadden eigen bestuurders in steden waar christenen woonden. De belangrijkste bestuurder zat in Rome: de paus. De hele gemeenschap van gelovigen en bestuurders noem je de kerk."},
+          {type:"theorie", topic:"romeinse rijk", front:"Wat deed keizer Constantijn de Grote in 313?", back:"Hij stopte de christenvervolgingen en gaf christenen toestemming om in het openbaar hun god te vereren. Hij liet ook kerken bouwen en benoemde christenen in bestuursfuncties."},
+          {type:"theorie", topic:"romeinse rijk", front:"Wat gebeurde er na de dood van Constantijn?", back:"De kerk werd snel groter en machtiger."},
+          {type:"theorie", topic:"romeinse rijk", front:"Wat deed keizer Theodosius aan het einde van de 4e eeuw?", back:"Hij verklaarde het christendom tot staatsgodsdienst. Andere godsdiensten werden verboden en het Romeinse Rijk werd een christelijk rijk."},
+          {type:"theorie", topic:"romeinse rijk", front:"Betekende staatsgodsdienst dat alle christenen hetzelfde geloof hadden?", back:"Nee. Vanaf het begin waren er geregeld ruzies over de juiste leer. In de 11e eeuw ontstonden zelfs twee aparte kerken: één in West-Europa en één in het Oost-Romeinse Rijk."},
+
+          {type:"theorie", topic:"jaartallen", front:"Wat gebeurde er in 30 n.C.?", back:"Begin van het christendom.", short:true},
+          {type:"theorie", topic:"jaartallen", front:"Wat gebeurde er in 313 n.C.?", back:"Christendom officieel toegestaan.", short:true}
+        ]
+      },
+      {
+        id: "algemeen",
+        title: "Algemene historische begrippen",
+        cards: [
+          {type:"begrip", topic:"historisch denken", front:"dateren", back:"Zo precies mogelijk bepalen wanneer iets is gebeurd.", short:true},
+          {type:"begrip", topic:"historisch denken", front:"eeuw", back:"Tijdsduur van honderd jaar.", short:true},
+          {type:"begrip", topic:"historisch denken", front:"jaartelling", back:"De manier waarop mensen aangeven in welk jaar iets gebeurde.", short:true},
+          {type:"begrip", topic:"historisch denken", front:"periode", back:"Een reeks van eeuwen die bij elkaar horen, zoals de prehistorie of de oudheid.", short:true},
+          {type:"begrip", topic:"historisch denken", front:"tijdvak", back:"Een reeks eeuwen of jaren die bij elkaar horen, zoals de tijd van jagers en boeren of de tijd van Grieken en Romeinen.", short:true},
+
+          {type:"theorie", topic:"historisch denken", front:"Wat is het verschil tussen een eeuw, een periode en een tijdvak?", back:"Een eeuw is honderd jaar. Een periode is een reeks eeuwen die bij elkaar horen. Een tijdvak is een reeks jaren of eeuwen met bepaalde gezamenlijke kenmerken."},
+          {type:"theorie", topic:"historisch denken", front:"Waarom gebruiken historici verschillende jaartellingen?", back:"Omdat mensen in verschillende tijden en culturen jaren op verschillende manieren zijn gaan tellen."},
+          {type:"theorie", topic:"historisch denken", front:"Wat betekent dateren in de geschiedenis?", back:"Zo precies mogelijk bepalen wanneer iets is gebeurd.", short:true}
+        ]
+      }
+
+      ,{
+        id: "4.1",
+        title: "Geschiedenis 4.1 – Leven op het platteland",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"middeleeuwen", back:"Periode van 500 tot 1500 n.C.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"vroege middeleeuwen", back:"Tijdvak van 500 tot 1000 n.C.", short:true},
+          {type:"begrip", topic:"samenvatting", front:"agrarische samenleving", back:"Samenleving waarin bijna iedereen als boer werkt en er weinig steden zijn."},
+          {type:"begrip", topic:"samenvatting", front:"domein", back:"Gebied waar een heer de baas was en inkomsten kreeg."},
+          {type:"begrip", topic:"samenvatting", front:"autarkie", back:"Economie waarin mensen in hun eigen behoeften voorzien."},
+          {type:"begrip", topic:"samenvatting", front:"lijfeigene", back:"Boer die eigendom was van een heer en geen vrijheid had."},
+          {type:"begrip", topic:"samenvatting", front:"horige", back:"Boer zonder eigen grond die aan het domein gebonden was."},
+          {type:"begrip", topic:"samenvatting", front:"herendiensten", back:"Werkzaamheden die horigen gratis voor de heer moesten doen."},
+          {type:"begrip", topic:"samenvatting", front:"hofstelsel", back:"Systeem waarbij een heer boeren beschermde in ruil voor arbeid en opbrengst."},
+
+          {type:"theorie", topic:"leerdoel", front:"Wat veranderde er economisch na het uiteenvallen van het Romeinse Rijk?", back:"De handel nam af en steden verdwenen grotendeels. Mensen gingen vooral op het platteland wonen en werken als boer."},
+          {type:"theorie", topic:"leerdoel", front:"Wat is een agrarische samenleving?", back:"Een samenleving waarin bijna iedereen boer is en er weinig handel en steden zijn."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe zag een domein eruit?", back:"Een domein bestond uit vroonland (voor de heer), hoeveland (voor boeren) en woeste gronden."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe werkte het hofstelsel?", back:"Boeren kregen bescherming van een heer en mochten land gebruiken, in ruil voor arbeid en een deel van hun opbrengst."},
+
+          {type:"theorie", topic:"economie", front:"Waarom verdween de handel na 500 grotendeels?", back:"Door oorlogen en het uiteenvallen van het rijk werd handel moeilijk en onveilig."},
+          {type:"theorie", topic:"economie", front:"Waarom trokken mensen naar het platteland?", back:"Omdat steden minder veilig en economisch minder belangrijk werden."},
+          {type:"theorie", topic:"economie", front:"Wat is autarkie?", back:"Dat mensen alles zelf maken en weinig afhankelijk zijn van handel."},
+
+          {type:"theorie", topic:"domein", front:"Waarom zochten boeren bescherming bij een heer?", back:"Omdat het onveilig was door oorlog en plunderingen."},
+          {type:"theorie", topic:"domein", front:"Wat kreeg een heer in ruil voor bescherming?", back:"Land, opbrengsten en arbeid van boeren."},
+          {type:"theorie", topic:"domein", front:"Wat is vroonland?", back:"Land van de heer waarvan de opbrengst voor hem was."},
+          {type:"theorie", topic:"domein", front:"Wat is hoeveland?", back:"Land dat boeren gebruikten voor eigen levensonderhoud."},
+
+          {type:"theorie", topic:"horigheid", front:"Wat is het verschil tussen lijfeigenen en horigen?", back:"Lijfeigenen waren eigendom van de heer; horigen waren niet vrij maar hadden wel een eigen boerderij."},
+          {type:"theorie", topic:"horigheid", front:"Welke verplichtingen hadden horigen?", back:"Ze moesten een deel van hun opbrengst afstaan en herendiensten verrichten."},
+          {type:"theorie", topic:"horigheid", front:"Waarom konden horigen het domein niet verlaten?", back:"Omdat ze gebonden waren aan de grond van de heer."}
+        ]
+      }
+
+      ,{
+        id: "4.2",
+        title: "Geschiedenis 4.2 – Keizers, koningen en heren",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"Frankische Rijk", back:"Rijk van de Franken dat belangrijk was van de 6e tot en met de 9e eeuw."},
+          {type:"begrip", topic:"samenvatting", front:"leenman", back:"Iemand die land in leen kreeg in ruil voor hulp en trouw."},
+          {type:"begrip", topic:"samenvatting", front:"vazal", back:"Leenman." , short:true},
+          {type:"begrip", topic:"samenvatting", front:"leenheer", back:"Iemand die land uitleent aan leenmannen in ruil voor steun."},
+          {type:"begrip", topic:"samenvatting", front:"ridder", back:"Zwaarbewapende ruiter met eigen paard."},
+          {type:"begrip", topic:"samenvatting", front:"adel", back:"Groep mensen die gespecialiseerd waren in bestuur en oorlog en vaak land bezaten."},
+          {type:"begrip", topic:"samenvatting", front:"leenstelsel", back:"Systeem waarbij land werd uitgeleend in ruil voor trouw en militaire steun."},
+
+          {type:"theorie", topic:"leerdoel", front:"Waarom was samenwerking tussen koningen en de kerk belangrijk?", back:"Omdat koningen steun en legitimiteit kregen van de kerk, terwijl de kerk bescherming en invloed kreeg."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe werkte het leenstelsel?", back:"De koning gaf land in leen aan leenmannen, die hem in ruil hielpen met bestuur en oorlog."},
+          {type:"theorie", topic:"leerdoel", front:"Wat was een gevolg van het leenstelsel voor Europa?", back:"Het bestuur werd versnipperd en koningen verloren macht aan leenmannen."},
+
+          {type:"theorie", topic:"franken", front:"Wie waren de Franken?", back:"Een Germaans volk dat een rijk opbouwde in West-Europa."},
+          {type:"theorie", topic:"franken", front:"Wie was Clovis?", back:"Een Frankische koning die alle Franken verenigde en het christendom aannam."},
+          {type:"theorie", topic:"franken", front:"Waarom was de samenwerking tussen Clovis en de kerk belangrijk?", back:"Omdat de kerk goed georganiseerd was en hem hielp bij bestuur en legitimiteit."},
+
+          {type:"theorie", topic:"leenstelsel", front:"Waarom ontstond het leenstelsel?", back:"Omdat er weinig geld was en koningen soldaten nodig hadden."},
+          {type:"theorie", topic:"leenstelsel", front:"Wat kregen leenmannen in ruil voor hun diensten?", back:"Land (leen) en macht over de mensen die daar woonden."},
+          {type:"theorie", topic:"leenstelsel", front:"Wat moesten leenmannen doen voor de koning?", back:"Ze moesten trouw zweren en hem helpen in oorlog en bestuur."},
+          {type:"theorie", topic:"leenstelsel", front:"Wie waren achterleenmannen?", back:"Ridders die land kregen van leenmannen."},
+          {type:"theorie", topic:"leenstelsel", front:"Wat is de adel?", back:"Leenmannen en achterleenmannen samen."},
+
+          {type:"theorie", topic:"karel", front:"Wie was Karel de Grote?", back:"Een Frankische koning die een groot rijk opbouwde en tot keizer werd gekroond."},
+          {type:"theorie", topic:"karel", front:"Waarom werd Karel tot keizer gekroond?", back:"Als beloning voor zijn hulp aan de paus."},
+
+          {type:"theorie", topic:"veranderingen", front:"Wat gebeurde er na de dood van Karel de Grote?", back:"Het rijk werd verdeeld onder zijn zonen en viel uiteen."},
+          {type:"theorie", topic:"veranderingen", front:"Waarom verloor de koning macht?", back:"Omdat leenmannen hun gebieden als eigen bezit gingen zien."},
+          {type:"theorie", topic:"veranderingen", front:"Welke dreigingen waren er van buitenaf?", back:"Aanvallen van Vikingen en Hongaren."}
+        ]
+      }
+
+      ,{
+        id: "4.3",
+        title: "Geschiedenis 4.3 – Verspreiding van het christendom",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"heidenen", back:"Naam die christenen gaven aan mensen die in natuurgoden en -krachten geloofden."},
+          {type:"begrip", topic:"samenvatting", front:"klooster", back:"Gebouw waar monniken of nonnen leven om zich volledig aan hun geloof te wijden."},
+          {type:"begrip", topic:"samenvatting", front:"monnik", back:"Man die zijn leven aan zijn geloof heeft gewijd en in een klooster woont."},
+          {type:"begrip", topic:"samenvatting", front:"non", back:"Vrouw die haar leven aan haar geloof heeft gewijd en in een klooster woont."},
+          {type:"begrip", topic:"samenvatting", front:"missionaris", back:"Priester die mensen tot het christelijk geloof probeert te bekeren."},
+          {type:"begrip", topic:"samenvatting", front:"theoloog", back:"Geleerde die gespecialiseerd is in godsdienst."},
+          {type:"begrip", topic:"samenvatting", front:"concilie", back:"Kerkvergadering."},
+          {type:"begrip", topic:"samenvatting", front:"priester", back:"Geestelijke die mensen helpt te leven volgens het geloof en belangrijke rituelen uitvoert."},
+          {type:"begrip", topic:"samenvatting", front:"stand", back:"Groep met een vaste plek en taak in de samenleving."},
+          {type:"begrip", topic:"samenvatting", front:"geestelijkheid", back:"Groep mensen die hun leven in dienst stellen van de kerk, zoals priesters, monniken en nonnen."},
+
+          {type:"theorie", topic:"leerdoel", front:"Hoe verspreidde het christendom zich in West‑Europa?", back:"Door missionarissen, steun van koningen en het aanpassen van heidense gebruiken aan christelijke feesten."},
+          {type:"theorie", topic:"leerdoel", front:"Waarom was er geen eenheid binnen het christendom?", back:"Omdat mensen verschillend dachten over de leer van Jezus, wat leidde tot discussies en kerkvergaderingen (concilies)."},
+          {type:"theorie", topic:"leerdoel", front:"Waarom was het christendom belangrijk voor middeleeuwse mensen?", back:"Het bepaalde het dagelijks leven, gaf regels en hoop op leven na de dood."},
+          {type:"theorie", topic:"leerdoel", front:"Wat zijn de drie standen?", back:"Geestelijkheid, adel en boeren."},
+
+          {type:"theorie", topic:"verspreiding", front:"Waarom duurde het lang voordat iedereen christelijk werd?", back:"Omdat veel mensen bleven vasthouden aan hun oude geloof in natuurgoden."},
+          {type:"theorie", topic:"verspreiding", front:"Wat deden missionarissen?", back:"Zij probeerden mensen te bekeren tot het christendom."},
+          {type:"theorie", topic:"verspreiding", front:"Waarom werkte het koppelen van heidense feesten aan christelijke feesten?", back:"Omdat mensen zo hun oude gewoonten konden behouden binnen een nieuw geloof."},
+          {type:"theorie", topic:"verspreiding", front:"Wie was Willibrord?", back:"Een missionaris die rond 700 mensen in Nederland tot het christendom bekeerde."},
+
+          {type:"theorie", topic:"kerk", front:"Wat gebeurde er tijdens concilies?", back:"Kerkleiders beslisten wat het juiste geloof was en welke ideeën verboden werden."},
+          {type:"theorie", topic:"kerk", front:"Waarom ontstonden er twee kerken in de 11e eeuw?", back:"Door blijvende meningsverschillen tussen West- en Oost-Europa."},
+
+          {type:"theorie", topic:"cultuur", front:"Hoe beïnvloedde het christendom het dagelijks leven?", back:"Mensen trouwden, werden gedoopt en begraven in de kerk en vierden christelijke feestdagen."},
+          {type:"theorie", topic:"cultuur", front:"Wat was de rol van een priester?", back:"Hij leidde kerkdiensten, verrichtte rituelen en hielp mensen volgens het geloof te leven."},
+          {type:"theorie", topic:"cultuur", front:"Waarom luisterden mensen naar priesters?", back:"Omdat ze geloofden dat priesters contact hadden met God en invloed op hun zielenheil."},
+          {type:"theorie", topic:"cultuur", front:"Wat deden kloosters?", back:"Ze verspreidden kennis, leidden nieuwe geestelijken op en zorgden voor zieken en reizigers."},
+
+          {type:"theorie", topic:"standen", front:"Wat is de eerste stand?", back:"De geestelijkheid: zij moesten bidden voor iedereen."},
+          {type:"theorie", topic:"standen", front:"Wat is de tweede stand?", back:"De adel: zij moesten mensen beschermen."},
+          {type:"theorie", topic:"standen", front:"Wat is de derde stand?", back:"De boeren: zij moesten werken en voedsel produceren."},
+          {type:"theorie", topic:"standen", front:"Kon je van stand veranderen?", back:"Nee, dat was vrijwel onmogelijk."}
+        ]
+      }
+
+      ,{
+        id: "4.4",
+        title: "Geschiedenis 4.4 – De islam",
+        cards: [
+          {type:"begrip", topic:"samenvatting", front:"islam", back:"Godsdienst die rond 600 ontstond in het Midden-Oosten."},
+          {type:"begrip", topic:"samenvatting", front:"Allah", back:"De enige god volgens de islam."},
+          {type:"begrip", topic:"samenvatting", front:"Mohammed", back:"Stichter en profeet van de islam."},
+          {type:"begrip", topic:"samenvatting", front:"profeet", back:"Iemand die de boodschap van God doorgeeft."},
+          {type:"begrip", topic:"samenvatting", front:"moslim", back:"Aanhanger van de islam."},
+          {type:"begrip", topic:"samenvatting", front:"Koran", back:"Heilig boek van de islam."},
+          {type:"begrip", topic:"samenvatting", front:"kalief", back:"Opvolger van Mohammed en leider van het islamitische rijk."},
+          {type:"begrip", topic:"samenvatting", front:"moskee", back:"Gebedshuis van moslims."},
+
+          {type:"theorie", topic:"leerdoel", front:"Hoe ontstond de islam?", back:"De islam ontstond rond 600 in Mekka, waar Mohammed predikte dat er één God was: Allah."},
+          {type:"theorie", topic:"leerdoel", front:"Wat zijn de belangrijkste kenmerken van de islamitische geloofsleer?", back:"Geloof in één God, volgen van de Koran en leven volgens de vijf zuilen."},
+          {type:"theorie", topic:"leerdoel", front:"Hoe verspreidde de islam zich?", back:"Door veroveringen en bestuur onder kaliefen."},
+          {type:"theorie", topic:"leerdoel", front:"Welke kenmerken had de islamitische cultuur?", back:"Wetenschap, kennisoverdracht en culturele uitwisseling."},
+
+          {type:"theorie", topic:"ontstaan", front:"Waarom vluchtte Mohammed naar Medina?", back:"Omdat hij in Mekka werd tegengewerkt."},
+          {type:"theorie", topic:"ontstaan", front:"Waarom is het jaar 622 belangrijk?", back:"Het is het begin van de islamitische jaartelling."},
+
+          {type:"theorie", topic:"geloof", front:"Wat zijn de vijf zuilen van de islam?", back:"Geloof in Allah, bidden, armen helpen, vasten tijdens ramadan en bedevaart naar Mekka."},
+          {type:"theorie", topic:"geloof", front:"Wat gebeurt er volgens de islam na de dood?", back:"Goede mensen gaan naar de hemel, anderen naar de hel."},
+
+          {type:"theorie", topic:"verspreiding", front:"Waarom groeide het islamitische rijk snel?", back:"Door sterke legers en goed bestuur."},
+          {type:"theorie", topic:"verspreiding", front:"Waarom bekeerden mensen zich tot de islam?", back:"Omdat het voordelen gaf, zoals minder belasting."},
+
+          {type:"theorie", topic:"cultuur", front:"Wat kenmerkt de islamitische cultuur?", back:"Invloed op architectuur, wetenschap en kunst."},
+          {type:"theorie", topic:"cultuur", front:"Waarom was islamitische wetenschap belangrijk?", back:"Omdat kennis uit de oudheid werd bewaard en verder ontwikkeld."}
+        ]
+      },
+      {
+        id: "algemeen2",
+        title: "Algemene begrippen historisch denken",
+        cards: [
+          {type:"begrip", topic:"historisch denken", front:"continuïteit", back:"Onveranderlijkheid over langere tijd."},
+          {type:"begrip", topic:"historisch denken", front:"verandering", back:"Als dingen op een andere manier gaan gebeuren."},
+
+          {type:"theorie", topic:"historisch denken", front:"Wat is continuïteit?", back:"Dat dingen hetzelfde blijven over een langere periode."},
+          {type:"theorie", topic:"historisch denken", front:"Wat is verandering?", back:"Dat dingen anders worden in de loop van de tijd."}
+        ]
+      }
+
+      ,{
+        id: "jaartallen",
+        title: "Jaartallen H3 & H4",
+        cards: [
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer regeert Clovis?", back:"ca. 500"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer ontstaat de islam?", back:"622"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer breidt het islamitische rijk zich uit?", back:"ca. 625-750"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer worden heidenen in Noord-Nederland bekeerd?", back:"ca. 700-750"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer ontstaat het leenstelsel?", back:"ca. 750"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer wordt Karel de Grote keizer?", back:"800"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer valt het West-Romeinse Rijk?", back:"476"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer wordt het Romeinse Rijk opgesplitst?", back:"395"},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer ontstaat de stad Rome?", back:"750 v.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer begint de Romeinse Republiek?", back:"509 v.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer begint het Romeinse Keizerrijk?", back:"27 v.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer begint het christendom?", back:"30 n.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer wordt het christendom officieel toegestaan?", back:"313 n.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer splitst het Romeinse Rijk in twee delen?", back:"395 n.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer eindigt het West-Romeinse Rijk?", back:"476 n.C."},
+          {type:"begrip", topic:"jaartal", front:"JAARTAL — Wanneer eindigt het Oost-Romeinse Rijk?", back:"1453 n.C."}
+        ]
+      }
+];
+
+    // Bouw een gecombineerde sectie als standaardweergave
+    sections[0].cards = sections.slice(1).flatMap(section => section.cards);
+
+    let currentSectionIndex = 0;
+    let allWords = [];
+    let currentList = [];
+    let difficultWords = [];
+    let idx = 0;
+    let reverseMode = false;
+    let filterOn = false;
+    let sortMode = 'std';
+    let studyMode = 'all'; // all | begrippen | theorie
+
+    const card = document.getElementById('card-element');
+    const frontFace = document.getElementById('front-face');
+    const backFace = document.getElementById('back-face');
+    const textFront = document.getElementById('text-front');
+    const textBack = document.getElementById('text-back');
+    const prog = document.getElementById('progress');
+
+    function storageKey(){
+      return `geschiedenis_flashcards_${sections[currentSectionIndex].id}_v1`;
+    }
+
+    function initSectionSelector(){
+      const select = document.getElementById('section-select');
+      select.innerHTML = sections.map((s, i) =>
+        `<option value="${i}">${s.title}</option>`
+      ).join('');
+      select.value = currentSectionIndex;
+    }
+
+    function rebuildCurrentSection(){
+      const section = sections[currentSectionIndex];
+      document.getElementById('section-chip').textContent = section.id === 'alles' ? 'Alles samen' : `Paragraaf ${section.id}`;
+      document.querySelector('.subtitle').textContent = section.id === 'alles' ? '3.3 t/m 4.4 + algemene begrippen' : section.title.replace("Geschiedenis " + section.id + " – ", "");
+      allWords = section.cards.map((c, i) => ({...c, _id: `${section.id}_${i}`}));
+      load();
+      applyStudyMode();
+    }
+
+    function changeSection(){
+      currentSectionIndex = Number(document.getElementById('section-select').value);
+      idx = 0;
+      filterOn = false;
+      studyMode = 'all';
+      document.getElementById('mode-btn').textContent = 'Modus: alles';
+      rebuildCurrentSection();
+    }
+
+    function load() {
+      difficultWords = [];
+      idx = 0;
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || '{}');
+      if (saved.diffIds) {
+        difficultWords = saved.diffIds.map(id => allWords.find(w => w._id === id)).filter(Boolean);
+      }
+      if (typeof saved.lastIdx === 'number') idx = saved.lastIdx;
+      if (saved.reverseMode === true) reverseMode = true;
+      else reverseMode = false;
+      if (saved.studyMode) studyMode = saved.studyMode;
+    }
+
+    function save() {
+      localStorage.setItem(storageKey(), JSON.stringify({
+        diffIds: difficultWords.map(w => w._id),
+        lastIdx: idx,
+        reverseMode,
+        studyMode
+      }));
+    }
+
+    function applyStudyMode(){
+      let base = [...allWords];
+      if (studyMode === 'begrippen') base = base.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') base = base.filter(w => w.type === 'theorie');
+
+      currentList = filterOn ? base.filter(w => difficultWords.includes(w)) : base;
+
+      if (currentList.length === 0 && filterOn) {
+        alert("Geen moeilijke kaarten binnen deze modus.");
+        filterOn = false;
+        currentList = base;
+      }
+      if (idx >= currentList.length) idx = 0;
+      updateModeButton();
+      update();
+    }
+
+    function updateModeButton(){
+      const labels = {
+        all: 'Modus: alles',
+        begrippen: 'Modus: alleen begrippen',
+        theorie: 'Modus: alleen theorie'
+      };
+      document.getElementById('mode-btn').textContent = labels[studyMode];
+    }
+
+    function cycleModeValue(v){
+      if (v === 'all') return 'begrippen';
+      if (v === 'begrippen') return 'theorie';
+      return 'all';
+    }
+
+    function toggleMode(){
+      studyMode = cycleModeValue(studyMode);
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function update() {
+      if (!currentList.length) {
+        textFront.textContent = 'Geen kaarten';
+        textBack.textContent = 'Geen kaarten';
+        prog.textContent = '0 kaarten';
+        return;
+      }
+
+      card.classList.remove('is-flipped');
+      frontFace.classList.remove('small-front');
+      backFace.classList.remove('small-back');
+
+      const item = currentList[idx];
+      const frontText = reverseMode ? item.back : item.front;
+      const backText = reverseMode ? item.front : item.back;
+
+      textFront.textContent = frontText;
+      textBack.textContent = backText;
+
+      const isFrontLong = frontText.length > 110;
+      const isBackLong = backText.length > 150 || item.short === false ? backText.length > 120 : item.short !== true && backText.length > 120;
+
+      if (isFrontLong) frontFace.classList.add('small-front');
+      if (isBackLong || item.short !== true && backText.length > 110) backFace.classList.add('small-back');
+
+      document.getElementById('label-front').textContent = reverseMode ? 'Uitleg' : 'Vraag / begrip';
+      document.getElementById('label-back').textContent = reverseMode ? 'Vraag / begrip' : 'Antwoord / uitleg';
+
+      document.getElementById('card-type-front').textContent = reverseMode ? 'Antwoord / uitleg' : (item.type === 'begrip' ? 'Begrip' : 'Theorie');
+      document.getElementById('card-type-back').textContent = reverseMode ? (item.type === 'begrip' ? 'Begrip' : 'Theorie') : 'Antwoord / uitleg';
+      document.getElementById('card-topic-front').textContent = item.topic;
+      document.getElementById('card-topic-back').textContent = item.topic;
+
+      prog.textContent = `Kaart ${idx + 1} van ${currentList.length}`;
+      card.classList.toggle('is-marked', difficultWords.includes(item));
+      document.getElementById('filter-btn').textContent = `Focus op moeilijk (${difficultWords.length})`;
+      document.getElementById('lang-btn').textContent = reverseMode ? '🔄 Antwoord ➔ Vraag' : '🔄 Vraag ➔ Antwoord';
+      save();
+    }
+
+    function flip(){ card.classList.toggle('is-flipped'); }
+    function next(){ idx = (idx + 1) % currentList.length; update(); }
+    function prev(){ idx = (idx - 1 + currentList.length) % currentList.length; update(); }
+    function shuffle(){ currentList.sort(() => Math.random() - 0.5); idx = 0; update(); }
+    function toggleLang(){ reverseMode = !reverseMode; update(); }
+
+    function mark(){
+      const item = currentList[idx];
+      if (!difficultWords.includes(item)) difficultWords.push(item);
+      else difficultWords = difficultWords.filter(w => w !== item);
+      update();
+    }
+
+    function toggleFilter(){
+      filterOn = !filterOn;
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function openList(){
+      document.getElementById('list-modal').style.display = 'block';
+      renderList();
+    }
+
+    function closeList(){
+      document.getElementById('list-modal').style.display = 'none';
+    }
+
+    function setSort(mode){
+      sortMode = mode;
+      document.getElementById('sort-std').className = mode === 'std' ? 'active' : '';
+      document.getElementById('sort-diff').className = mode === 'diff' ? 'active' : '';
+      renderList();
+    }
+
+    function renderList(){
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+
+      let list = allWords.map((w, i) => ({ ...w, origIdx: i }));
+      if (studyMode === 'begrippen') list = list.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') list = list.filter(w => w.type === 'theorie');
+
+      if (sortMode === 'diff') {
+        list.sort((a, b) => Number(difficultWords.includes(allWords[b.origIdx])) - Number(difficultWords.includes(allWords[a.origIdx])));
+      }
+
+      list.forEach(w => {
+        const hay = `${w.front} ${w.back} ${w.topic} ${w.type}`.toLowerCase();
+        if (hay.includes(q)) {
+          const div = document.createElement('div');
+          div.className = 'word-item';
+          div.innerHTML = `
+            <div>
+              <div class="term">${escapeHtml(w.front)}</div>
+              <div class="def">${escapeHtml(w.back)}</div>
+              <div class="tag">${w.type} • ${w.topic}</div>
+            </div>
+            <span>${difficultWords.includes(allWords[w.origIdx]) ? '★' : ''}</span>
+          `;
+          div.onclick = () => {
+            filterOn = false;
+            currentList = [...allWords];
+            if (studyMode === 'begrippen') currentList = currentList.filter(x => x.type === 'begrip');
+            if (studyMode === 'theorie') currentList = currentList.filter(x => x.type === 'theorie');
+            idx = currentList.findIndex(x => x._id === w._id);
+            if (idx < 0) idx = 0;
+            update();
+            closeList();
+          };
+          container.appendChild(div);
+        }
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    function resetProgress(){
+      if (confirm("Wis voortgang voor deze paragraaf?")) {
+        localStorage.removeItem(storageKey());
+        changeSection();
+      }
+    }
+
+    initSectionSelector();
+    rebuildCurrentSection();
+  </script>
+</body>
+</html>
