@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Aardrijkskunde – Gambia Flashcards</title>
+  <style>
+    :root{
+      --primary:#2c3e50;
+      --orange:#f39c12;
+      --blue:#3498db;
+      --green:#27ae60;
+      --bg:#f4f7f6;
+      --muted:#7f8c8d;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      min-height:100vh;
+      padding:18px;
+      color:var(--primary);
+    }
+    .app{width:100%;max-width:430px;}
+    h1{font-size:1.25rem;margin:8px 0 6px;text-align:center;}
+    .subtitle{text-align:center;color:var(--muted);font-size:.92rem;margin-bottom:8px;}
+    .section-chip{
+      display:inline-block;background:#e8f4ee;color:#1f7a52;padding:7px 12px;border-radius:999px;
+      font-size:.8rem;font-weight:700;margin:0 auto 8px;
+    }
+    .topbar{display:flex;justify-content:center;}
+    .scene{width:100%;height:280px;perspective:1000px;margin:16px 0;}
+    .card{width:100%;height:100%;position:relative;transition:transform .4s;transform-style:preserve-3d;cursor:pointer;}
+    .card.is-flipped{transform:rotateY(180deg);}
+    .card-face{
+      position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      border-radius:25px;padding:24px;text-align:center;box-shadow:0 10px 24px rgba(0,0,0,.10);background:#fff;border:1px solid #d9e1e5;
+    }
+    .card-back{background:var(--primary);color:#fff;transform:rotateY(180deg);}
+    .label{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;opacity:.55;font-weight:700;}
+    .meta{
+      position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;
+      font-size:.72rem;opacity:.75;gap:10px;
+    }
+    .star{position:absolute;top:14px;right:18px;font-size:1.5rem;color:var(--orange);display:none;}
+    .is-marked .star{display:block;}
+    .is-marked .card-face{border:3px solid var(--orange);}
+    #text-front,#text-back{
+      font-size:1.18rem;line-height:1.35;font-weight:800;max-width:100%;overflow-wrap:break-word;white-space:pre-wrap;
+    }
+    .small-back #text-back,.small-front #text-front{font-size:1rem;font-weight:700;line-height:1.45;}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+    button,select{
+      padding:14px 12px;border:none;border-radius:15px;background:#fff;color:var(--primary);font-weight:700;cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.05);font-size:.92rem;
+    }
+    .btn-orange{background:var(--orange);color:#fff;grid-column:span 2;}
+    .btn-blue{background:var(--blue);color:#fff;grid-column:span 2;}
+    .btn-green{background:var(--green);color:#fff;grid-column:span 2;}
+    .btn-dark{background:var(--primary);color:#fff;grid-column:span 2;opacity:.9;font-size:.78rem;}
+    .toolbar{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px;}
+    .progress{margin-top:14px;color:var(--muted);font-size:.87rem;font-weight:700;text-align:center;}
+    #list-modal{
+      display:none;position:fixed;inset:0;background:#fff;z-index:1000;overflow-y:auto;padding:18px;
+    }
+    .sticky{position:sticky;top:0;background:#fff;padding-bottom:12px;}
+    .search-box{
+      width:100%;padding:15px;border-radius:12px;border:1px solid #d9e1e5;margin-bottom:10px;font-size:1rem;
+    }
+    .sort-bar{display:flex;gap:10px;margin-bottom:10px;}
+    .sort-bar button{flex:1;padding:10px;font-size:.78rem;background:#eef2f4;box-shadow:none;}
+    .sort-bar button.active{background:var(--primary);color:#fff;}
+    .word-item{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 4px;border-bottom:1px solid #edf1f3;cursor:pointer;
+    }
+    .term{font-weight:800;margin-bottom:4px;color:var(--primary);}
+    .def{color:#5c6b73;line-height:1.4;font-size:.94rem;}
+    .tag{
+      display:inline-block;margin-top:6px;font-size:.72rem;padding:4px 8px;border-radius:999px;background:#eef2f4;color:#5c6b73;font-weight:700;
+    }
+    .close-list{
+      position:fixed;right:20px;bottom:20px;background:var(--primary);color:#fff;padding:15px 24px;border-radius:30px;z-index:20;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar"><div class="section-chip" id="section-chip">Alles samen</div></div>
+    <h1>Aardrijkskunde – Flashcards</h1>
+    <div class="subtitle">Gambia – hoofdstuk 3 (eerste set)</div>
+
+    <div class="toolbar">
+      <select id="section-select" onchange="changeSection()"></select>
+    </div>
+
+    <div class="scene" onclick="flip()">
+      <div class="card" id="card-element">
+        <div class="card-face card-front" id="front-face">
+          <div class="meta"><span id="card-type-front">Begrip / vraag</span><span id="card-topic-front"></span></div>
+          <div class="star">★</div>
+          <div class="label" id="label-front">Voorkant</div>
+          <div id="text-front">...</div>
+        </div>
+        <div class="card-face card-back" id="back-face">
+          <div class="meta"><span id="card-type-back">Antwoord / uitleg</span><span id="card-topic-back"></span></div>
+          <div class="label" id="label-back">Achterkant</div>
+          <div id="text-back">...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="prev()">⬅️ Vorige</button>
+      <button onclick="next()">Volgende ➡️</button>
+      <button class="btn-orange" onclick="mark()">❌ Ken ik nog niet</button>
+      <button onclick="shuffle()">🔀 Husselen</button>
+      <button id="lang-btn" onclick="toggleLang()">🔄 Vraag ➔ Antwoord</button>
+      <button id="filter-btn" onclick="toggleFilter()">Focus op moeilijk (0)</button>
+      <button class="btn-green" onclick="toggleMode()" id="mode-btn">Modus: alles</button>
+      <button class="btn-blue" onclick="openList()">📋 Kaartenlijst & zoeken</button>
+      <button class="btn-dark" onclick="resetProgress()">🗑️ Voortgang wissen</button>
+    </div>
+
+    <div class="progress" id="progress">Kaart 1 van ...</div>
+  </div>
+
+  <div id="list-modal">
+    <div class="sticky">
+      <input type="text" class="search-box" id="search-input" placeholder="Zoek begrip, vraag of uitleg..." oninput="renderList()">
+      <div class="sort-bar">
+        <button id="sort-std" class="active" onclick="setSort('std')">Standaard</button>
+        <button id="sort-diff" onclick="setSort('diff')">Moeilijk ★</button>
+      </div>
+    </div>
+    <div id="list-container"></div>
+    <button class="close-list" onclick="closeList()">SLUITEN ✖</button>
+  </div>
+
+  <script>
+    const sections = [
+      { id:"alles", title:"Aardrijkskunde – Gambia alles samen", cards:[
+          {type:'begrip',topic:'B91',front:'Wat is verval?',back:'Het hoogteverschil tussen twee plaatsen langs een rivier.'},
+          {type:'begrip',topic:'B91',front:'Wat is verhang?',back:'Het verval per kilometer van een rivier.'},
+          {type:'begrip',topic:'B91',front:'Wat zijn bovenloop, middenloop en benedenloop?',back:'Bovenloop = begin (hoog), middenloop = tussenstuk, benedenloop = laagland richting zee.'},
+
+          {type:'begrip',topic:'B117',front:'Wat is breedte-erosie?',back:'Erosie in de buitenbocht van een rivier waardoor deze breder wordt.'},
+          {type:'begrip',topic:'B117',front:'Wat is een meander?',back:'Een bocht in een rivier.'},
+          {type:'begrip',topic:'B117',front:'Wat is een hoefijzermeer?',back:'Een afgesneden rivierbocht.'},
+          {type:'begrip',topic:'B117',front:'Wat is een estuarium?',back:'Een trechtervormige riviermonding met invloed van eb en vloed.'},
+          {type:'begrip',topic:'B117',front:'Wat is een delta?',back:'Een gebied met vertakkingen van een rivier bij de monding.'},
+
+          {type:'begrip',topic:'B141',front:'Wat is verwoestijning?',back:'Het uitbreiden van woestijn door o.a. overbegrazing en droogte.'},
+
+          {type:'begrip',topic:'B149',front:'Wat is bevolkingsdichtheid?',back:'Aantal inwoners per km².'},
+          {type:'begrip',topic:'B149',front:'Wat is bevolkingsspreiding?',back:'Hoe mensen verdeeld zijn over een gebied.'},
+          {type:'begrip',topic:'B149',front:'Wat is bevolkingsconcentratie?',back:'Een opeenhoping van mensen in een gebied.'},
+
+          {type:'begrip',topic:'B160',front:'Wat zijn pushfactoren?',back:'Redenen om een land te verlaten.'},
+          {type:'begrip',topic:'B160',front:'Wat zijn pullfactoren?',back:'Redenen die een land aantrekkelijk maken om naartoe te gaan.'},
+
+          {type:'begrip',topic:'B161',front:'Wat is een staat?',back:'Een gebied met duidelijke grenzen en een eigen regering.'},
+          {type:'begrip',topic:'B161',front:'Wat is een natuurlijke grens?',back:'Een grens gevormd door natuur (rivier, gebergte).'},
+          {type:'begrip',topic:'B161',front:'Wat is een kunstmatige grens?',back:'Een grens die door mensen is getrokken.'},
+          {type:'begrip',topic:'B161',front:'Wat zijn open grenzen?',back:'Grenzen waar je vrij kunt reizen zonder controle.'},
+          {type:'begrip',topic:'B161',front:'Wat zijn gesloten grenzen?',back:'Grenzen met controles en beperkingen.'},
+
+          {type:'begrip',topic:'B164',front:'Wat is cultuur?',back:'Alles wat mensen hebben aangeleerd (taal, religie, gewoonten).'},
+          {type:'begrip',topic:'B165',front:'Wat is een multiculturele samenleving?',back:'Samenleving met meerdere culturen.'},
+          {type:'begrip',topic:'B165',front:'Wat is een etnische groep?',back:'Groep mensen met dezelfde cultuur.'},
+          {type:'begrip',topic:'B165',front:'Wat is culturele diversiteit?',back:'Verschillende culturen in één gebied.'},
+
+          {type:'begrip',topic:'B228',front:'Wat zijn basisbehoeften?',back:'Voedsel, huisvesting, onderwijs en zorg.'},
+
+          {type:'begrip',topic:'B229',front:'Wat is BNP?',back:'Totale productie van goederen en diensten in een land per jaar.'}
+] },
+
+      { id:"3.1", title:"3.1 – Gambia: een andere wereld", cards:[
+        {type:"theorie", topic:"ligging", front:"Wat valt op aan de ligging van Gambia?", back:"Gambia ligt in West-Afrika in de tropen en is een lang, smal land dat bijna helemaal door Senegal wordt omringd."},
+        {type:"theorie", topic:"ligging", front:"Waardoor lijkt Gambia op de kaart zo smal en lang?", back:"Het land ligt rond de rivier de Gambia. Die rivier deelt het land in tweeën en bepaalt de vorm van het land."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een belangrijk verschil in ligging tussen Gambia en Nederland?", back:"Gambia ligt in de tropen dicht bij de evenaar. Nederland ligt in de gematigde zone in Europa."},
+
+        {type:"theorie", topic:"landschap", front:"Welke landschappen horen bij Gambia?", back:"Bij Gambia horen onder andere een delta, mangrove langs de kust en savanne in het binnenland."},
+        {type:"theorie", topic:"landschap", front:"Wat is een delta en waar zie je die in Gambia?", back:"Een delta is het gebied bij de monding waar een rivier zich vertakt. Bij de riviermonding van Gambia hoort zo'n laag kustgebied."},
+        {type:"theorie", topic:"landschap", front:"Wat is een mangrove en waarom past die bij Gambia?", back:"Een mangrove is begroeiing die groeit in zout of brak water langs tropische kusten. Die komt voor in de kustzone en delta van Gambia."},
+        {type:"theorie", topic:"landschap", front:"Wat is savanne en waar ligt die in Gambia?", back:"Savanne is een tropisch landschap met gras en verspreide bomen of struiken. Grote delen van Gambia buiten de kustzone bestaan uit savanne."},
+        {type:"theorie", topic:"landschap", front:"Waarom zijn ontbossing en overbeweiding een probleem in Gambia?", back:"Door ontbossing verdwijnen bomen en door overbeweiding verdwijnt begroeiing. Daardoor raakt de bodem sneller uitgeput en droger."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een belangrijk verschil in landschap tussen Gambia en Nederland?", back:"Gambia heeft savanne en mangrove in een tropisch landschap. Nederland heeft geen savanne en is veel sterker door mensen ingericht met polders, dijken en grasland."},
+
+        {type:"theorie", topic:"klimaat", front:"Wat is een tropisch klimaat en hoe zie je dat in Gambia?", back:"Een tropisch klimaat is het hele jaar warm. In Gambia is er daarnaast een duidelijk nat en droog seizoen."},
+        {type:"theorie", topic:"klimaat", front:"Hoe verschilt het klimaat van Gambia van dat van Nederland?", back:"Gambia heeft een tropisch klimaat met natte en droge seizoenen. Nederland heeft een gematigd zeeklimaat met koelere temperaturen en neerslag in alle seizoenen."},
+
+        {type:"theorie", topic:"cultuur en volk", front:"Wat betekent cultuur in Gambia?", back:"Cultuur is alles wat mensen hebben aangeleerd, zoals taal, gewoonten, kleding en manier van leven."},
+        {type:"theorie", topic:"cultuur en volk", front:"Wat betekent het dat er verschillende etnische groepen in Gambia wonen?", back:"Dat betekent dat er groepen mensen met een eigen cultuur, taal en gebruiken naast elkaar leven."},
+        {type:"theorie", topic:"cultuur en volk", front:"Wat zijn nomaden en waarom worden die bij Gambia genoemd?", back:"Nomaden zijn mensen zonder vaste woonplaats. In Gambia horen sommige groepen, zoals herders, deels bij die manier van leven."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in bevolking en cultuur tussen Gambia en Nederland?", back:"In Gambia spelen stamverbanden en etnische groepen duidelijker een rol. Nederland is ook cultureel divers, maar heeft een andere geschiedenis en sociale opbouw."},
+
+        {type:"theorie", topic:"godsdienst", front:"Wat zijn natuurgodsdiensten?", back:"Natuurgodsdiensten zijn geloven waarin mensen uitgaan van geesten en krachten in de natuur."},
+        {type:"theorie", topic:"godsdienst", front:"Welke rol speelt godsdienst in Gambia?", back:"De islam is belangrijk, maar daarnaast komen ook natuurgodsdiensten voor."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in godsdienst tussen Gambia en Nederland?", back:"In Gambia is de islam veel zichtbaarder in het dagelijks leven. Nederland is meer ontkerkelijkt en religie bepaalt het straatbeeld minder sterk."}
+      ]},
+
+      { id:"3.2", title:"3.2 – Arm en rijk in Gambia", cards:[
+        {type:"theorie", topic:"geschiedenis", front:"Welke historische invloed heeft Europa op Gambia gehad?", back:"Europese landen dreven handel aan de West-Afrikaanse kust, trokken grenzen en speelden een grote rol in de slavenhandel."},
+        {type:"theorie", topic:"geschiedenis", front:"Wat was de driehoekshandel?", back:"Bij de driehoekshandel gingen goederen van Europa naar Afrika, tot slaaf gemaakte mensen van Afrika naar Amerika en producten zoals suiker en katoen van Amerika naar Europa."},
+        {type:"theorie", topic:"grenzen", front:"Waarom is de grens van Gambia opvallend?", back:"De grens is kunstmatig ontstaan in de koloniale tijd en volgt grotendeels de rivier de Gambia."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil tussen Gambia en Nederland als je naar grenzen kijkt?", back:"De grens van Gambia is sterk bepaald door koloniale afspraken. Nederland heeft ook kunstmatige grenzen, maar niet zo extreem als de smalle strook rond één rivier."},
+
+        {type:"theorie", topic:"rijkdom en armoede", front:"Wat is de armoedegrens?", back:"De armoedegrens is het inkomen dat nodig is om in de basisbehoeften te voorzien."},
+        {type:"theorie", topic:"rijkdom en armoede", front:"Wat zijn basisbehoeften?", back:"Basisbehoeften zijn dingen die mensen echt nodig hebben, zoals voedsel, huisvesting, onderwijs, gezondheidszorg en veiligheid."},
+        {type:"theorie", topic:"rijkdom en armoede", front:"Waarom leeft een groot deel van de bevolking van Gambia in armoede?", back:"Omdat veel mensen weinig inkomen hebben, sterk afhankelijk zijn van landbouw en beperkte toegang hebben tot goede voorzieningen."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een belangrijk verschil in rijkdom tussen Gambia en Nederland?", back:"In Nederland kunnen veel meer mensen in hun basisbehoeften voorzien. In Gambia leeft een veel groter deel van de bevolking onder de armoedegrens."},
+
+        {type:"theorie", topic:"ontwikkelingspeil", front:"Wat betekent ontwikkelingspeil?", back:"Het ontwikkelingspeil laat zien hoe ontwikkeld een land is, bijvoorbeeld op het gebied van inkomen, gezondheid en onderwijs."},
+        {type:"theorie", topic:"ontwikkelingspeil", front:"Wat is een ontwikkelingskenmerk?", back:"Een ontwikkelingskenmerk is een meetbaar kenmerk waarmee je ontwikkeling kunt vergelijken, zoals inkomen, scholing of gezondheid."},
+        {type:"theorie", topic:"ontwikkelingspeil", front:"Waarom zegt inkomen niet alles over ontwikkeling?", back:"Omdat ontwikkeling niet alleen om geld gaat, maar ook om gezondheid, onderwijs, veiligheid en de vraag of mensen in hun basisbehoeften kunnen voorzien."},
+        {type:"theorie", topic:"koopkracht", front:"Wat is koopkracht en waarom is dat belangrijk?", back:"Koopkracht is wat je met je geld kunt kopen. Daarmee kun je beter vergelijken hoe mensen echt leven."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in ontwikkelingspeil tussen Gambia en Nederland?", back:"Nederland heeft een veel hoger ontwikkelingspeil: hogere inkomens, betere zorg en onderwijs en meer zekerheid in het dagelijks leven."}
+      ]},
+
+      { id:"3.3", title:"3.3 – Bronnen: bevolkingskenmerken van Gambia", cards:[
+        {type:"theorie", topic:"een dichtbevolkt land", front:"Wat betekent bevolkingsdichtheid?", back:"Bevolkingsdichtheid is het gemiddelde aantal inwoners per vierkante kilometer."},
+        {type:"theorie", topic:"een dichtbevolkt land", front:"Waarom kun je Gambia toch dichtbevolkt noemen, ook al is Nederland dichter bevolkt?", back:"Omdat Gambia als klein land toch veel inwoners op een kleine oppervlakte heeft en binnen Afrika relatief dichtbevolkt is."},
+        {type:"theorie", topic:"vergelijking", front:"Hoe verschilt de bevolkingsdichtheid van Gambia van die van Nederland?", back:"Nederland heeft gemiddeld nog meer inwoners per km², maar Gambia is binnen Afrika opvallend dichtbevolkt."},
+
+        {type:"theorie", topic:"beroepsbevolking", front:"Wat valt op aan de beroepsbevolking van Gambia?", back:"Veel mensen werken in de landbouw en een groot deel werkt zelfverzorgend of in eenvoudige banen."},
+        {type:"theorie", topic:"beroepsbevolking", front:"Wat betekent zelfverzorgende landbouw voor Gambia?", back:"Dat veel boeren vooral produceren voor eigen gebruik en dus weinig geld verdienen of sparen."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in werk tussen Gambia en Nederland?", back:"In Gambia werkt een groter deel van de bevolking in landbouw en eenvoudige diensten. In Nederland werken veel meer mensen in industrie, zakelijke diensten, zorg en onderwijs."},
+
+        {type:"theorie", topic:"een jonge bevolking", front:"Waarom noem je de bevolking van Gambia jong?", back:"Omdat een groot deel van de bevolking uit kinderen en jongeren bestaat."},
+        {type:"theorie", topic:"een jonge bevolking", front:"Wat betekent geboortecijfer?", back:"Het geboortecijfer is het aantal levendgeborenen per 1.000 inwoners per jaar."},
+        {type:"theorie", topic:"een jonge bevolking", front:"Wat betekent artsendichtheid?", back:"Artsendichtheid is het aantal artsen per duizend inwoners."},
+        {type:"theorie", topic:"een jonge bevolking", front:"Wat betekent zuigelingensterfte?", back:"Zuigelingensterfte is het aantal kinderen dat sterft in het eerste levensjaar per 1.000 levendgeborenen."},
+        {type:"theorie", topic:"een jonge bevolking", front:"Wat betekent levensverwachting?", back:"De levensverwachting is het gemiddelde aantal jaren dat mensen naar verwachting leven."},
+        {type:"theorie", topic:"vergelijking", front:"Hoe verschilt de leeftijdsopbouw van Gambia van die van Nederland?", back:"Gambia heeft een veel jongere bevolking met meer kinderen en jongeren. Nederland heeft een oudere bevolking met meer vergrijzing."},
+
+        {type:"theorie", topic:"infrastructuur", front:"Wat betekent infrastructuur?", back:"Infrastructuur zijn alle voorzieningen die nodig zijn om mensen, goederen of informatie te vervoeren."},
+        {type:"theorie", topic:"infrastructuur", front:"Waarom is infrastructuur in Gambia een probleem?", back:"Omdat veel wegen onverhard zijn en in de regentijd slecht begaanbaar, waardoor vervoer en handel moeilijker worden."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in infrastructuur tussen Gambia en Nederland?", back:"Nederland heeft een veel dichter en beter wegennet en betere voorzieningen voor vervoer en communicatie."},
+
+        {type:"theorie", topic:"onderwijs", front:"Wat valt op aan het onderwijs in Gambia?", back:"Niet iedereen gaat lang naar school, veel mensen zijn analfabeet en vervolgonderwijs is minder bereikbaar."},
+        {type:"theorie", topic:"onderwijs", front:"Waarom is onderwijs belangrijk voor ontwikkeling?", back:"Goed onderwijs vergroot de kans op werk, een hoger inkomen en een hoger ontwikkelingspeil."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in onderwijs tussen Gambia en Nederland?", back:"In Nederland is onderwijs beter toegankelijk en volgen veel meer kinderen langer onderwijs."},
+
+        {type:"theorie", topic:"export en import", front:"Waarom is de economie van Gambia kwetsbaar in de handel met het buitenland?", back:"Omdat Gambia weinig exporteert, veel moet importeren en afhankelijk is van enkele producten zoals pinda's."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in handel tussen Gambia en Nederland?", back:"Nederland heeft een veel grotere en meer gevarieerde economie en handelt op veel grotere schaal met het buitenland."},
+
+        {type:"theorie", topic:"verstedelijking", front:"Wat betekent urbanisatie of verstedelijking?", back:"Urbanisatie of verstedelijking is het proces waarbij steeds meer mensen in steden gaan wonen."},
+        {type:"theorie", topic:"verstedelijking", front:"Wat betekent urbanisatiegraad?", back:"De urbanisatiegraad is het percentage mensen dat in een stad woont."},
+        {type:"theorie", topic:"verstedelijking", front:"Wat betekent urbanisatietempo?", back:"Het urbanisatietempo is de snelheid waarmee de urbanisatiegraad toeneemt."},
+        {type:"theorie", topic:"verstedelijking", front:"Waarom trekken veel mensen in Gambia naar de stad?", back:"Door werkloosheid en misoogsten op het platteland hopen mensen in en rond Banjul meer kansen te vinden."},
+        {type:"theorie", topic:"vergelijking", front:"Hoe verschilt verstedelijking in Gambia van verstedelijking in Nederland?", back:"In Gambia groeit de stad vaak door trek van arme plattelandsbewoners. In Nederland is verstedelijking al verder gevorderd en speelt vooral uitbreiding van bestaande stedelijke gebieden een rol."}
+      ]},
+
+      { id:"3.4", title:"3.4 – Kansen voor Gambia", cards:[
+        {type:"theorie", topic:"toerisme", front:"Waarom is toerisme belangrijk voor Gambia?", back:"Toerisme levert geld en werk op en is een belangrijke bron van inkomsten voor het land."},
+        {type:"theorie", topic:"toerisme", front:"Wat betekent directe werkgelegenheid bij toerisme?", back:"Dat mensen direct werk hebben door toerisme, bijvoorbeeld in hotels, restaurants of vervoer."},
+        {type:"theorie", topic:"toerisme", front:"Wat betekent indirecte werkgelegenheid bij toerisme?", back:"Dat toerisme ook werk oplevert buiten hotels en stranden, bijvoorbeeld in bouw, handel of reclame."},
+        {type:"theorie", topic:"toerisme", front:"Wat betekent informele sector en waarom is die belangrijk in Gambia?", back:"De informele sector bestaat uit ongeschoold en niet-geregistreerd werk. Veel Gambianen verdienen zo toch iets, bijvoorbeeld op straat of in kleine handel."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil in toerisme tussen Gambia en Nederland?", back:"Voor Gambia is toerisme relatief belangrijker als bron van inkomen. Nederland heeft daarnaast een veel bredere economie."},
+
+        {type:"theorie", topic:"arbeidsmigranten", front:"Wat is een arbeidsmigrant?", back:"Een arbeidsmigrant is iemand die verhuist om werk te vinden."},
+        {type:"theorie", topic:"arbeidsmigranten", front:"Wat betekent brain drain bij arbeidsmigratie?", back:"Dat goedopgeleide mensen een land verlaten, waardoor daar tekorten ontstaan, bijvoorbeeld in de zorg."},
+        {type:"theorie", topic:"arbeidsmigranten", front:"Waarom vertrekken veel Gambianen naar het buitenland?", back:"Omdat ze op zoek zijn naar werk en inkomen en geld naar familie thuis kunnen sturen."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil tussen Gambia en Nederland bij arbeidsmigratie?", back:"Uit Gambia vertrekken veel mensen wegens gebrek aan kansen. Nederland trekt juist vaak arbeidsmigranten aan."},
+
+        {type:"theorie", topic:"buitenlandse investeringen", front:"Wat betekent buitenlandse investering?", back:"Een buitenlandse investering is een investering van een buitenlands bedrijf in een land."},
+        {type:"theorie", topic:"buitenlandse investeringen", front:"Waarom kunnen buitenlandse investeringen goed zijn voor Gambia?", back:"Ze kunnen banen, inkomen en nieuwe voorzieningen opleveren."},
+        {type:"theorie", topic:"buitenlandse investeringen", front:"Waarom kunnen buitenlandse investeringen ook nadelen hebben?", back:"Omdat winst naar het buitenland kan verdwijnen en Gambia afhankelijk kan worden van buitenlandse bedrijven."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil tussen Gambia en Nederland bij buitenlandse investeringen?", back:"Gambia is kwetsbaarder en afhankelijker van buitenlandse investeerders. Nederland heeft zelf veel meer economische macht en investeringsmogelijkheden."},
+
+        {type:"theorie", topic:"ontwikkelingssamenwerking", front:"Wat betekent ontwikkelingssamenwerking?", back:"Ontwikkelingssamenwerking is samenwerking tussen rijke en arme landen om ontwikkeling te verbeteren."},
+        {type:"theorie", topic:"ontwikkelingssamenwerking", front:"Wat is het verschil tussen ontwikkelingshulp en ontwikkelingssamenwerking?", back:"Bij ontwikkelingshulp geven rijke landen hulp. Bij ontwikkelingssamenwerking werken landen meer samen als partners."},
+        {type:"theorie", topic:"ontwikkelingssamenwerking", front:"Wat is een donorland?", back:"Een donorland is een land dat ontwikkelingshulp geeft."},
+        {type:"theorie", topic:"ontwikkelingssamenwerking", front:"Wat is een zwakke staat?", back:"Een zwakke staat is een staat waarvan de overheid slecht functioneert."},
+        {type:"theorie", topic:"vergelijking", front:"Wat is een verschil tussen Gambia en Nederland bij ontwikkeling en hulp?", back:"Gambia ontvangt steun om voorzieningen te verbeteren. Nederland behoort juist tot de landen die hulp en samenwerking financieren."}
+      ]},
+
+      { id:"begrippen", title:"Finish – Begrippen", cards:[
+        {type:"begrip", topic:"finish", front:"verval", back:"Het hoogteverschil tussen twee plaatsen langs een rivier.", short:true},
+        {type:"begrip", topic:"finish", front:"verhang", back:"Het verval per kilometer van een rivier.", short:true},
+        {type:"begrip", topic:"finish", front:"bovenloop", back:"Het eerste stuk van een rivier, dicht bij de bron.", short:true},
+        {type:"begrip", topic:"finish", front:"middenloop", back:"Het middelste deel van een rivier, tussen bovenloop en benedenloop.", short:true},
+        {type:"begrip", topic:"finish", front:"benedenloop", back:"Het laatste stuk van een rivier, dicht bij de zee of monding.", short:true},
+        {type:"begrip", topic:"finish", front:"lengteprofiel", back:"De doorsnede van een rivier van bron tot monding.", short:true},
+
+        {type:"begrip", topic:"finish", front:"breedte-erosie", back:"Erosie in de buitenbocht van een rivier waardoor de rivier breder wordt.", short:true},
+        {type:"begrip", topic:"finish", front:"meander", back:"Een bocht in een rivier.", short:true},
+        {type:"begrip", topic:"finish", front:"hoefijzermeer", back:"Een afgesneden rivierbocht.", short:true},
+        {type:"begrip", topic:"finish", front:"estuarium", back:"Trechtervormige riviermonding met invloed van eb en vloed.", short:true},
+        {type:"begrip", topic:"finish", front:"delta", back:"Gebied met vertakkingen van een rivier bij de monding.", short:true},
+
+        {type:"begrip", topic:"finish", front:"verwoestijning", back:"Uitbreiding van een woestijn doordat vegetatie verdwijnt, bijvoorbeeld door overbeweiding en droogte.", short:true},
+        {type:"begrip", topic:"finish", front:"overbeweiding", back:"Verdwijning van de vegetatie doordat er te veel vee graast.", short:true},
+
+        {type:"begrip", topic:"finish", front:"demografie", back:"Wetenschap die de omvang, samenstelling en ontwikkeling van de bevolking bestudeert.", short:true},
+        {type:"begrip", topic:"finish", front:"bevolkingsdichtheid", back:"Het gemiddelde aantal inwoners per vierkante kilometer.", short:true},
+        {type:"begrip", topic:"finish", front:"bevolkingsspreiding", back:"Hoe de bevolking is verdeeld over een gebied.", short:true},
+        {type:"begrip", topic:"finish", front:"bevolkingsconcentratie", back:"Opeenhoping van mensen in een gebied.", short:true},
+
+        {type:"begrip", topic:"finish", front:"pushfactor", back:"Reden om te vertrekken uit een gebied of land.", short:true},
+        {type:"begrip", topic:"finish", front:"afstotingsfactor", back:"Ander woord voor pushfactor.", short:true},
+        {type:"begrip", topic:"finish", front:"pullfactor", back:"Reden die een ander gebied aantrekkelijk maakt voor migranten.", short:true},
+        {type:"begrip", topic:"finish", front:"aantrekkingsfactor", back:"Ander woord voor pullfactor.", short:true},
+        {type:"begrip", topic:"finish", front:"migratienetwerk", back:"Netwerk van contacten dat migratie naar een ander gebied makkelijker maakt.", short:true},
+
+        {type:"begrip", topic:"finish", front:"staat", back:"Gebied met duidelijke grenzen en een bestuur dat eigen baas is (soeverein).", short:true},
+        {type:"begrip", topic:"finish", front:"natuurlijke grens", back:"Grens langs een natuurlijk obstakel, zoals een rivier of gebergte.", short:true},
+        {type:"begrip", topic:"finish", front:"kunstmatige grens", back:"Grens die door mensen is bepaald.", short:true},
+        {type:"begrip", topic:"finish", front:"open grens", back:"Grens waar reizigers en goederen gemakkelijk kunnen passeren.", short:true},
+        {type:"begrip", topic:"finish", front:"gesloten grens", back:"Grens met controles en beperkingen voor reizigers of goederen.", short:true},
+        {type:"begrip", topic:"finish", front:"continentaal plat", back:"Ondiep deel van de zeebodem dat bij een continent hoort.", short:true},
+
+        {type:"begrip", topic:"finish", front:"cultuur", back:"Alles wat je hebt aangeleerd, zoals taal, godsdienst en gewoonten.", short:true},
+        {type:"begrip", topic:"finish", front:"cultuurgebied", back:"Gebied met overeenkomsten in cultuur.", short:true},
+        {type:"begrip", topic:"finish", front:"westerse cultuur", back:"Cultuur die vooral met Europa, Noord-Amerika en Australië wordt verbonden.", short:true},
+        {type:"begrip", topic:"finish", front:"diffusie", back:"Verspreiding van cultuurelementen van het ene naar het andere cultuurgebied.", short:true},
+
+        {type:"begrip", topic:"finish", front:"multiculturele samenleving", back:"Samenleving waarin mensen uit verschillende culturen met elkaar samenleven.", short:true},
+        {type:"begrip", topic:"finish", front:"etnische groep", back:"Groep mensen met dezelfde cultuur binnen een grotere samenleving.", short:true},
+        {type:"begrip", topic:"finish", front:"culturele diversiteit", back:"Verscheidenheid aan culturen binnen een samenleving of gebied.", short:true},
+        {type:"begrip", topic:"finish", front:"culturele minderheid", back:"Groep met een andere cultuur dan de overheersende cultuur.", short:true},
+        {type:"begrip", topic:"finish", front:"etnische minderheid", back:"Etnische groep die kleiner is dan de meerderheid in een samenleving.", short:true},
+
+        {type:"begrip", topic:"finish", front:"urbanisatie", back:"Verstedelijking: het proces waarbij steeds meer mensen in de stad gaan wonen.", short:true},
+        {type:"begrip", topic:"finish", front:"verstedelijking", back:"Ander woord voor urbanisatie.", short:true},
+        {type:"begrip", topic:"finish", front:"ruraal-urbane migratie", back:"Migratie van het platteland naar de stad.", short:true},
+        {type:"begrip", topic:"finish", front:"selectieve migratie", back:"Migratie waarbij vooral bepaalde groepen verhuizen, bijvoorbeeld jonge mensen.", short:true},
+        {type:"begrip", topic:"finish", front:"urbanisatiegraad", back:"Het percentage mensen dat in een stad woont.", short:true},
+        {type:"begrip", topic:"finish", front:"urbanisatietempo", back:"De snelheid waarmee de urbanisatiegraad toeneemt.", short:true},
+
+        {type:"begrip", topic:"finish", front:"economische sectoren", back:"Indeling van werk in groepen zoals primaire, secundaire, tertiaire en quartaire sector.", short:true},
+        {type:"begrip", topic:"finish", front:"primaire sector", back:"Werk waarbij producten rechtstreeks uit de natuur worden gehaald.", short:true},
+        {type:"begrip", topic:"finish", front:"mijnbouw", back:"Winning van delfstoffen, zoals ijzererts of aardolie.", short:true},
+        {type:"begrip", topic:"finish", front:"secundaire sector", back:"Werk waarbij producten uit de primaire sector worden bewerkt.", short:true},
+        {type:"begrip", topic:"finish", front:"tertiaire sector", back:"Commerciële dienstverlening.", short:true},
+        {type:"begrip", topic:"finish", front:"quartaire sector", back:"Niet-commerciële dienstverlening, zoals onderwijs, overheid en zorg.", short:true},
+        {type:"begrip", topic:"finish", front:"commerciële dienstverlening", back:"Dienstverlening die gericht is op winst maken.", short:true},
+        {type:"begrip", topic:"finish", front:"dienstensector", back:"De tertiaire en quartaire sector samen.", short:true},
+
+        {type:"begrip", topic:"finish", front:"infrastructuur", back:"Alle voorzieningen die nodig zijn om personen, goederen of informatie te vervoeren.", short:true},
+
+        {type:"begrip", topic:"finish", front:"toeristenindustrie", back:"Alle bedrijven en activiteiten die zich bezighouden met toerisme.", short:true},
+        {type:"begrip", topic:"finish", front:"arbeidsintensief werk", back:"Werk waarvoor veel mensen nodig zijn.", short:true},
+        {type:"begrip", topic:"finish", front:"seizoenswerk", back:"Werk dat alleen in bepaalde periodes van het jaar voorkomt.", short:true},
+        {type:"begrip", topic:"finish", front:"hoogseizoen", back:"Periode waarin er extra veel toeristen zijn.", short:true},
+        {type:"begrip", topic:"finish", front:"massatoerisme", back:"Toerisme waarbij veel toeristen tegelijk op dezelfde plek verblijven.", short:true},
+
+        {type:"begrip", topic:"finish", front:"basisbehoefte", back:"Iets wat iedereen echt nodig heeft om redelijk te kunnen leven, zoals voedsel, huisvesting, onderwijs en zorg.", short:true},
+        {type:"begrip", topic:"finish", front:"artsendichtheid", back:"Het aantal artsen per duizend inwoners.", short:true},
+        {type:"begrip", topic:"finish", front:"zuigelingensterfte", back:"Het gemiddelde aantal kinderen dat in het eerste levensjaar overlijdt, per 1.000 levendgeborenen, per jaar.", short:true},
+
+        {type:"begrip", topic:"finish", front:"bruto nationaal product (bnp)", back:"De totale productie van goederen en diensten van inwoners van een land in een jaar, uitgedrukt in geld.", short:true},
+        {type:"begrip", topic:"finish", front:"bnp per inwoner", back:"Het gemiddelde inkomen per hoofd van de bevolking.", short:true},
+        {type:"begrip", topic:"finish", front:"bruto binnenlands product (bbp)", back:"De productie van inwoners, bedrijven en overheid binnen de staatsgrenzen van een land.", short:true},
+        {type:"begrip", topic:"finish", front:"koopkracht", back:"Het aantal goederen of diensten dat je van je geld kunt kopen.", short:true},
+
+        {type:"begrip", topic:"finish", front:"ontwikkelingssamenwerking", back:"Hulp aan armere landen om hun economische, politieke en sociale ontwikkeling te verbeteren.", short:true},
+        {type:"begrip", topic:"finish", front:"noodhulp", back:"Hulp bij acute problemen zoals oorlogen, hongersnood en natuurrampen.", short:true},
+        {type:"begrip", topic:"finish", front:"structurele hulp", back:"Hulp die blijvend verbeteringen brengt, zoals scholing, wegen of waterleidingen.", short:true},
+        {type:"begrip", topic:"finish", front:"duurzame hulp", back:"Ander woord voor structurele hulp.", short:true},
+        {type:"begrip", topic:"finish", front:"microkrediet", back:"Kleine lening aan mensen die een eigen bedrijfje willen opzetten.", short:true}
+      ]},
+
+      { id:"b-overzicht", title:"Begrippen bij elkaar", cards:[
+        {type:"theorie", topic:"rivier", front:"Hoe hangen rivierbegrippen zoals verval, verhang, bovenloop, middenloop en benedenloop met elkaar samen?", back:"Een rivier stroomt van hoog naar laag. Het totale hoogteverschil heet verval. Het verval per kilometer heet verhang. Daardoor onderscheid je bovenloop, middenloop en benedenloop. Samen zie je dat in het lengteprofiel van een rivier."},
+        {type:"theorie", topic:"riviermonding", front:"Hoe hangen breedte-erosie, meanders, hoefijzermeer, estuarium en delta met elkaar samen?", back:"Door breedte-erosie ontstaan bochten in een rivier: meanders. Soms wordt een bocht afgesneden en ontstaat een hoefijzermeer. Bij de monding kan een rivier uitkomen in een estuarium of in een delta."},
+        {type:"theorie", topic:"droogte", front:"Hoe hangen verwoestijning en overbeweiding met elkaar samen?", back:"Als te veel vee graast, verdwijnt begroeiing. Dan droogt de bodem sneller uit en kan verwoestijning ontstaan of erger worden."},
+        {type:"theorie", topic:"bevolking", front:"Hoe hangen demografie, bevolkingsdichtheid, bevolkingsspreiding en bevolkingsconcentratie met elkaar samen?", back:"Demografie bestudeert de bevolking. Daarbij kijk je hoeveel mensen ergens wonen (bevolkingsdichtheid), hoe ze verdeeld zijn (bevolkingsspreiding) en waar ze sterk samenklonteren (bevolkingsconcentratie)."},
+        {type:"theorie", topic:"migratie", front:"Hoe hangen pushfactoren, pullfactoren en migratienetwerken met elkaar samen?", back:"Pushfactoren duwen mensen weg uit een gebied. Pullfactoren trekken mensen naar een ander gebied. Migratienetwerken maken zo'n verhuizing makkelijker."},
+        {type:"theorie", topic:"staat en grenzen", front:"Hoe hangen staat, natuurlijke grens, kunstmatige grens, open grens en gesloten grens met elkaar samen?", back:"Een staat heeft grenzen. Die kunnen natuurlijk of kunstmatig zijn. Sommige grenzen zijn open en makkelijk te passeren, andere zijn gesloten en worden streng gecontroleerd."},
+        {type:"theorie", topic:"cultuur", front:"Hoe hangen cultuur, cultuurgebied, multiculturele samenleving en culturele diversiteit met elkaar samen?", back:"Cultuur is alles wat mensen aanleren. In een cultuurgebied lijken culturen op elkaar. In een multiculturele samenleving leven verschillende culturen samen, en dat zorgt voor culturele diversiteit."},
+        {type:"theorie", topic:"verstedelijking", front:"Hoe hangen urbanisatie, verstedelijking, ruraal-urbane migratie, urbanisatiegraad en urbanisatietempo met elkaar samen?", back:"Urbanisatie en verstedelijking betekenen hetzelfde: steeds meer mensen gaan in steden wonen. Dat komt vaak door ruraal-urbane migratie. De urbanisatiegraad laat zien hoeveel mensen in steden wonen, het urbanisatietempo hoe snel dat toeneemt."},
+        {type:"theorie", topic:"economie", front:"Hoe hangen primaire, secundaire, tertiaire en quartaire sector met elkaar samen?", back:"In de primaire sector haal je producten uit de natuur. In de secundaire sector worden die bewerkt. In de tertiaire sector gaat het om commerciële diensten en in de quartaire sector om niet-commerciële diensten. Tertiaire en quartaire sector samen noem je de dienstensector."},
+        {type:"theorie", topic:"toerisme", front:"Hoe hangen toeristenindustrie, arbeidsintensief werk, seizoenswerk, hoogseizoen en massatoerisme met elkaar samen?", back:"De toeristenindustrie bestaat uit alle bedrijven rond toerisme. Dat levert vaak arbeidsintensief werk op. Veel van dat werk is seizoenswerk, vooral in het hoogseizoen. Als heel veel toeristen tegelijk naar dezelfde plek gaan, noem je dat massatoerisme."},
+        {type:"theorie", topic:"ontwikkeling", front:"Hoe hangen basisbehoeften, artsendichtheid, zuigelingensterfte, bnp en koopkracht met elkaar samen?", back:"Om te kijken hoe goed het met een land gaat, kijk je of basisbehoeften zijn geregeld en naar cijfers over gezondheid en inkomen, zoals artsendichtheid, zuigelingensterfte, bnp en koopkracht."},
+        {type:"theorie", topic:"hulp", front:"Hoe hangen ontwikkelingssamenwerking, noodhulp, structurele hulp, duurzame hulp en microkrediet met elkaar samen?", back:"Ontwikkelingssamenwerking is hulp aan armere landen. Noodhulp is voor acute problemen. Structurele of duurzame hulp is bedoeld om een land blijvend sterker te maken. Microkrediet is een voorbeeld van hulp waarmee mensen zelf inkomen kunnen opbouwen."}
+      ]}
+    ];
+
+    sections[0].cards = sections.slice(1).flatMap(section => section.cards);
+
+    let currentSectionIndex = 0;
+    let allWords = [];
+    let currentList = [];
+    let difficultWords = [];
+    let idx = 0;
+    let reverseMode = false;
+    let filterOn = false;
+    let sortMode = 'std';
+    let studyMode = 'all';
+
+    const card = document.getElementById('card-element');
+    const frontFace = document.getElementById('front-face');
+    const backFace = document.getElementById('back-face');
+    const textFront = document.getElementById('text-front');
+    const textBack = document.getElementById('text-back');
+    const prog = document.getElementById('progress');
+
+    function storageKey(){ return `aardrijkskunde_gambia_${sections[currentSectionIndex].id}_v1`; }
+
+    function initSectionSelector(){
+      const select = document.getElementById('section-select');
+      select.innerHTML = sections.map((s, i) => `<option value="${i}">${s.title}</option>`).join('');
+      select.value = currentSectionIndex;
+    }
+
+    function rebuildCurrentSection(){
+      const section = sections[currentSectionIndex];
+      document.getElementById('section-chip').textContent = section.id === 'alles' ? 'Alles samen' : section.id;
+      document.querySelector('.subtitle').textContent = section.id === 'alles' ? 'Gambia – eerste set + oorzaak-gevolg' : section.title;
+      allWords = section.cards.map((c, i) => ({...c, _id: `${section.id}_${i}`}));
+      load();
+      applyStudyMode();
+    }
+
+    function changeSection(){
+      currentSectionIndex = Number(document.getElementById('section-select').value);
+      idx = 0;
+      filterOn = false;
+      studyMode = 'all';
+      document.getElementById('mode-btn').textContent = 'Modus: alles';
+      rebuildCurrentSection();
+    }
+
+    function load() {
+      difficultWords = [];
+      idx = 0;
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || '{}');
+      if (saved.diffIds) difficultWords = saved.diffIds.map(id => allWords.find(w => w._id === id)).filter(Boolean);
+      if (typeof saved.lastIdx === 'number') idx = saved.lastIdx;
+      reverseMode = saved.reverseMode === true;
+      if (saved.studyMode) studyMode = saved.studyMode;
+    }
+
+    function save() {
+      localStorage.setItem(storageKey(), JSON.stringify({
+        diffIds: difficultWords.map(w => w._id),
+        lastIdx: idx,
+        reverseMode,
+        studyMode
+      }));
+    }
+
+    function applyStudyMode(){
+      let base = [...allWords];
+      if (studyMode === 'begrippen') base = base.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') base = base.filter(w => w.type === 'theorie');
+      if (studyMode === 'verbanden') base = base.filter(w => w.topic === 'verband');
+
+      currentList = filterOn ? base.filter(w => difficultWords.includes(w)) : base;
+
+      if (currentList.length === 0 && filterOn) {
+        alert("Geen moeilijke kaarten binnen deze modus.");
+        filterOn = false;
+        currentList = base;
+      }
+      if (idx >= currentList.length) idx = 0;
+      updateModeButton();
+      update();
+    }
+
+    function updateModeButton(){
+      const labels = {
+        all: 'Modus: alles',
+        begrippen: 'Modus: alleen begrippen',
+        theorie: 'Modus: alleen uitleg',
+        verbanden: 'Modus: oorzaak-gevolg'
+      };
+      document.getElementById('mode-btn').textContent = labels[studyMode];
+    }
+
+    function cycleModeValue(v){
+      if (v === 'all') return 'begrippen';
+      if (v === 'begrippen') return 'theorie';
+      if (v === 'theorie') return 'verbanden';
+      return 'all';
+    }
+
+    function toggleMode(){
+      studyMode = cycleModeValue(studyMode);
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function update(){
+      if (currentList.length === 0) {
+        textFront.textContent = 'Geen kaarten in deze modus';
+        textBack.textContent = 'Kies een andere modus of sectie';
+        prog.textContent = '0 kaarten';
+        return;
+      }
+
+      card.classList.remove('is-flipped');
+      const item = currentList[idx];
+      const frontText = reverseMode ? item.back : item.front;
+      const backText = reverseMode ? item.front : item.back;
+
+      textFront.textContent = frontText;
+      textBack.textContent = backText;
+
+      document.getElementById('label-front').textContent = reverseMode ? 'Antwoord / uitleg' : 'Vraag / begrip';
+      document.getElementById('label-back').textContent = reverseMode ? 'Vraag / begrip' : 'Antwoord / uitleg';
+
+      document.getElementById('card-type-front').textContent = reverseMode
+        ? (item.type === 'begrip' ? 'Begrip' : 'Uitleg')
+        : (item.type === 'begrip' ? 'Begrip / vraag' : 'Vraag / uitleg');
+      document.getElementById('card-type-back').textContent = reverseMode ? 'Vraag / begrip' : 'Antwoord / uitleg';
+
+      document.getElementById('card-topic-front').textContent = item.topic || '';
+      document.getElementById('card-topic-back').textContent = item.topic || '';
+
+      frontFace.classList.toggle('small-front', frontText.length > 110);
+      backFace.classList.toggle('small-back', backText.length > 150);
+
+      prog.textContent = `Kaart ${idx + 1} van ${currentList.length}`;
+      card.classList.toggle('is-marked', difficultWords.includes(item));
+      document.getElementById('filter-btn').textContent = `Focus op moeilijk (${difficultWords.length})`;
+      document.getElementById('lang-btn').textContent = reverseMode ? '🔄 Antwoord ➔ Vraag' : '🔄 Vraag ➔ Antwoord';
+      save();
+    }
+
+    function flip(){ card.classList.toggle('is-flipped'); }
+    function next(){ idx = (idx + 1) % currentList.length; update(); }
+    function prev(){ idx = (idx - 1 + currentList.length) % currentList.length; update(); }
+    function shuffle(){ currentList.sort(() => Math.random() - 0.5); idx = 0; update(); }
+    function toggleLang(){ reverseMode = !reverseMode; update(); }
+
+    function mark(){
+      const item = currentList[idx];
+      if (!difficultWords.includes(item)) difficultWords.push(item);
+      else difficultWords = difficultWords.filter(w => w !== item);
+      update();
+    }
+
+    function toggleFilter(){
+      filterOn = !filterOn;
+      idx = 0;
+      applyStudyMode();
+    }
+
+    function openList(){ document.getElementById('list-modal').style.display = 'block'; renderList(); }
+    function closeList(){ document.getElementById('list-modal').style.display = 'none'; }
+
+    function setSort(mode){
+      sortMode = mode;
+      document.getElementById('sort-std').className = mode === 'std' ? 'active' : '';
+      document.getElementById('sort-diff').className = mode === 'diff' ? 'active' : '';
+      renderList();
+    }
+
+    function renderList(){
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+
+      let list = allWords.map((w, i) => ({ ...w, origIdx: i }));
+      if (studyMode === 'begrippen') list = list.filter(w => w.type === 'begrip');
+      if (studyMode === 'theorie') list = list.filter(w => w.type === 'theorie');
+      if (studyMode === 'verbanden') list = list.filter(w => w.topic === 'verband');
+
+      if (sortMode === 'diff') {
+        list.sort((a, b) => Number(difficultWords.includes(allWords[b.origIdx])) - Number(difficultWords.includes(allWords[a.origIdx])));
+      }
+
+      list.forEach(w => {
+        const hay = `${w.front} ${w.back} ${w.topic} ${w.type}`.toLowerCase();
+        if (hay.includes(q)) {
+          const div = document.createElement('div');
+          div.className = 'word-item';
+          div.innerHTML = `
+            <div>
+              <div class="term">${escapeHtml(w.front)}</div>
+              <div class="def">${escapeHtml(w.back)}</div>
+              <div class="tag">${w.type} • ${w.topic}</div>
+            </div>
+            <span>${difficultWords.includes(allWords[w.origIdx]) ? '★' : ''}</span>
+          `;
+          div.onclick = () => {
+            filterOn = false;
+            currentList = [...allWords];
+            if (studyMode === 'begrippen') currentList = currentList.filter(x => x.type === 'begrip');
+            if (studyMode === 'theorie') currentList = currentList.filter(x => x.type === 'theorie');
+            if (studyMode === 'verbanden') currentList = currentList.filter(x => x.topic === 'verband');
+            idx = currentList.findIndex(x => x._id === w._id);
+            if (idx < 0) idx = 0;
+            update();
+            closeList();
+          };
+          container.appendChild(div);
+        }
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    }
+
+    function resetProgress(){
+      if (confirm("Wis voortgang voor deze sectie?")) {
+        localStorage.removeItem(storageKey());
+        changeSection();
+      }
+    }
+
+    initSectionSelector();
+    rebuildCurrentSection();
+  </script>
+</body>
+</html>
